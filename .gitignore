@@ -1,4 +1,20 @@
+# build output
 build/
+__pycache__/
+*.pyc
 *.user
 *.suo
 .vs/
+
+# session logs - SECURITY: the relay/proxy/irc logs contain the real sfbonline
+# password in plaintext. Never commit *.log.
+*.log
+
+# runtime state
+bridge.pid
+
+# copyrighted source material - keep LOCAL ONLY (this repo is public).
+# rules_txt/ is extracted text of the purchased SFB rulebook PDFs (regenerate
+# from the PDFs on G:\My Drive\SFB); assets/ssd/ is scanned SSD book pages.
+rules_txt/
+assets/ssd/

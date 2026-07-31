@@ -1,0 +1,5 @@
+NAME,MissileRack,1
+SPEED, ,10
+SPEED,M,20
+CONTAINER,Missile,Standard Missile,1.0,4
+PACKAGE,x,Explosive,1.0,1

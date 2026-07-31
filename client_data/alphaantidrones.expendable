@@ -1,0 +1,8 @@
+NAME,AlphaAntiDrones,1
+SPEED, ,8
+SPEED,S,12
+SPEED,M,20
+SPEED,F,32
+CONTAINER,Type-VI,Dogfight Drone,0.5,2
+CONTAINER,ADD,ADD Round,0.5,0
+PACKAGE,d,Explosive-0.5SP,0.5,1

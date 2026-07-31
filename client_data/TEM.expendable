@@ -1,0 +1,5 @@
+NAME,TEM,1
+SPEED, ,0
+CONTAINER,TEM,Transporter Collector Beam,1.0,3
+CONTAINER,ARMOR TEM,Armored Transporter Collector Beam,1.0,3
+PACKAGE,,,1.0,1

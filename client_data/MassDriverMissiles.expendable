@@ -1,0 +1,10 @@
+NAME,MassDriverMissiles,1
+SPEED, ,0
+CONTAINER,ASM,Anti Ship Missile,1.0,3
+CONTAINER,AFM,Anti Fighter Missile,1.0,3
+CONTAINER,CPM,Charged Pentrator Missile,1.0,3
+CONTAINER,KSM,Kinetic Slug Missile,1.0,5
+CONTAINER,GBM,Ground Bombardment Missile,1.0,3
+CONTAINER,DGM,Data Gathering Missile,1.0,3
+CONTAINER,ESM,Early Standard Missile,1.0,3
+PACKAGE,,,1.0,1

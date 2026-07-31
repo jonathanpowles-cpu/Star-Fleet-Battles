@@ -1,0 +1,58 @@
+==================================================================
+SFB CAMPAIGN — SITUATION REPORT
+==================================================================
+
+ORDER OF BATTLE
+  Kzinti: 54 units, total EPV 5631, 18 capital-class
+     hulls: BC×6, CLE×5, EFF+×5, CV×3, CVL×3, CC×3, CS×3, DD×3
+  Lyran: 62 units, total EPV 6268, 6 capital-class
+     hulls: CW+×9, CA+×7, CL+×7, FF+×7, DD+×6, CC+×2, DD+p×2, FF+p×2
+
+FLEET CONDITION
+  Kzinti: avg condition 95%, 7 damaged
+       0%  Kzinti - CLE  @0802
+      48%  Kzinti - EFF+  @0902
+      69%  Kzinti - CC  @0902
+      73%  Kzinti - TGC  @0902
+      78%  Kzinti - CL  @0801
+      82%  Kzinti - FF+  @0801
+  Lyran: avg condition 89%, 13 damaged
+       0%  Lyran - FF+  @0702
+       0%  Lyran - FF+  @0801
+       0%  Lyran - CW+  @0801
+       0%  Lyran - CA+  @0801
+      12%  Lyran - BC+  @0902
+      57%  Lyran - DD+  @0602
+
+FORCE CONCENTRATIONS (by hex)
+  1401: 23 units (EPV 2425) [Kzinti:23]
+  0801: 10 units (EPV 955) [Kzinti:7/Lyran:3]
+  0804: 7 units (EPV 788) [Lyran:7]
+  0902: 5 units (EPV 639) [Lyran:1/Kzinti:4]
+  1105: 5 units (EPV 628) [Kzinti:5]
+  0903: 7 units (EPV 578) [Lyran:7]
+  0905: 6 units (EPV 570) [Lyran:6]
+  0703: 5 units (EPV 555) [Lyran:5]
+
+FRONT ANALYSIS
+  nearest contact: Kzinti - CV (Kzinti) @0902 <-> Lyran - BC+ (Lyran) @0902  = 0 hexes
+  forces engaged at the front (<=3 hexes): Kzinti 25 / Lyran 59
+
+STRATEGIC ASSETS
+  Lyran    Lyran - BATS  @0603
+  Lyran    Lyran - TGC  @0603
+  Lyran    Lyran - TGP  @0707
+  Lyran    Lyran - BATS  @0707
+  Lyran    Lyran - FRD  @0707
+  Kzinti   Kzinti - TGC  @1401
+  Kzinti   Kzinti - TGC  @0902
+  Kzinti   Kzinti - TGT  @1105
+  Kzinti   Kzinti - FRD  @1401
+  Kzinti   Kzinti - BATS  @1401
+
+RECENT CAMPAIGN EVENTS
+  168.2.3 0702 Kzinti Count's Fleet (Flag: CVL Hurricane) repels Lyran invaders (Pelt Hunter c
+  168.2.32 0801 Kzinti Count's Fleet (Flag: CVL Hurricane) having retreated is joined by Coomo
+  168.2.33 0802 Kzinti CV Scimitar, BC Star Cluster and escorts defeat Lyran invading force fr
+
+==================================================================

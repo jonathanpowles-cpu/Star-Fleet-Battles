@@ -1,5 +1,4 @@
 #pragma once
-#include <compare>
 #include <cstdlib>
 
 // Cube coordinates for a pointy-top hex grid.
@@ -11,7 +10,13 @@ struct Hex {
     constexpr Hex(int q, int r) : q(q), r(r), s(-q - r) {}
     constexpr Hex(int q, int r, int s) : q(q), r(r), s(s) {}
 
-    auto operator<=>(const Hex&) const = default;
+    constexpr bool operator==(const Hex& o) const { return q==o.q && r==o.r && s==o.s; }
+    constexpr bool operator!=(const Hex& o) const { return !(*this==o); }
+    constexpr bool operator< (const Hex& o) const {
+        if (q != o.q) return q < o.q;
+        if (r != o.r) return r < o.r;
+        return s < o.s;
+    }
 
     Hex operator+(const Hex& o) const { return {q + o.q, r + o.r, s + o.s}; }
     Hex operator-(const Hex& o) const { return {q - o.q, r - o.r, s - o.s}; }

@@ -1,0 +1,6 @@
+NAME,PST,2
+SPEED, ,32
+CONTAINER,PST,1.0,1
+PACKAGE,Single,Single,1.0,12
+PACKAGE,Double,Double,1.0,24
+PACKAGE,Triple,Triple,1.0,36

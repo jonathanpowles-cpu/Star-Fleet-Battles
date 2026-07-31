@@ -1,0 +1,4 @@
+NAME,Hyperdrone,1
+SPEED, ,32
+CONTAINER,Drone,Hyperdrone,1.0,4
+PACKAGE,x,Explosive,1.0,1

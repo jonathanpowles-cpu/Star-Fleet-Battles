@@ -1,0 +1,3 @@
+usage: sfb_bridge.py [-h] [--ai AI] [--advise ADVISE] [--no-voice]
+                     [--save SAVE] [--auto-save-pick] [--allow-multiple]
+sfb_bridge.py: error: unrecognized arguments: Online Client/app/restore/gameSFB_Game1

@@ -1,0 +1,46 @@
+Acts,root,Activities
+6,Acts,6. IMPULSE PROCEDURE
+6A,6,6A. MOVEMENT SEGMENT
+6A4,6A,6A4: FINAL MOVEMENT ACTIONS STAGE
+6A4.02,6A4,Announce speed changes, Forgo or resume web passage status (G10.533).
+6B,6,6B. IMPULSE ACTIVITY SEGMENT
+6B01,6B,6B1: INITIAL STAGE
+6B01.02,6B1,Switch fire control from active (D6.6) to passive mode (Dl 9.0) or vice versa. This is the time for voluntary changes; involuntary changes [e.g. wild weasel (J3.0), cloak (G13.0)j occur as required at other points (D6.63).
+6B02,6B,6B02: CLOAKING DEVICE STAGE
+6B02.01,6B02,Activate (G13.14) or deactivate (G13.15) cloaking device.
+6B03,6B,6B03: LOCKON STAGE
+6B03.01,6B03,Roll to determine if lockon has been lost, retained, or regained due to changing conditions (D6.1). Note that this may be repeated several times during the impulse if conditions (particularly cloaked ships and WW) change. This is also the point at which self-controlled ATG and warp-seeking drones which are beyond tracking range of their targets lose tracking, and the point at which the conditions of (F3.31) are judged.
+6B04,6B,6B04: SHIP SYSTEM FUNCTIONS STAGE
+6B04.03a,6B04,SubSpace Fields are activated (OG14.23) or deactivated (OG14.242).
+6B04.03b,6B04,Launch Mass Driver Missiles
+6B04.04,6B04,Operate Tractors: Activate or release tractor beams (G7.0). This is the only time for voluntary activation or release; involuntary release may occur at various points (destruction of tractor, launch of WW, etc.). This could result in an immediate tractor auction (G7.414).
+6B04.06,6B04,Labs (G4.2) attempt to identify seeking weapons and mines (M7.5).
+6B05,6B,6B05: SCOUT FUNCTIONS STAGE
+6B06,6B,6B06: SEEKING WEAPONS STAGE
+6B06.01,6B06,SW Control Step: Voluntary transfers (F3.5) or release (F3.4) of control of seeking weapons. Involuntary transfers and releases can occur at many other points in the sequence (F3.53).
+6B06.03,6B06,Launch plasma torpedoes (FPl.3) and/or pseudo-plasma torpedoes (FP6.12).
+6B06.04,6B06,MW Release Step: Deploy drones from SP shuttles (FD7.33).
+6B06.05,6B06,Launch drones (FD1.2).
+6B06.08,6B06,ESG Step: De-activate and (subsequently) activate expanding sphere generators (G23.3) based on previous announcements. Announce operation of ESGs (G23.3); cancel previous announcement (G23.33). Size and strength are announced (G23.46).
+6B07,6B,6B07: MARINES ACTIVITY STAGE
+6B07.02,6B07,Operate Shields Step: Drop shields; restore shields dropped previously (D3.5).
+6B07.03,6B07,Operate transporters (G8.0), including the laying of T-bombs (M3.22). Block boarding by (G8.23). Resolve hit and run raids (D7.8) conducted by Transporter.
+6B08,6B,6B08: SHUTTLE & PF FUNCTIONS STAGE
+6B08.01,6B08,Challenge enemy shuttles to a dogfight (J7.0).
+6B08.03,6B08,Recover (land) shuttlecraft (J1.6) and fighters.
+6B08.05,6B08,Launch shuttlecraft (J1.5), fighters, wild weasels (J3.0), suicide shuttles and scatter packs (FD7.0). Involuntary release of tractor beams to allow wild weasel launch (J3.452) may be a part of this action.
+6B09,6B,6B09: SATELLITE SHIP FUNCTIONS STAGE
+6B10,6B,6B10: SEPARATIONS STAGE
+6B10.03,6B10,Lay mines (other than by transporters) (M2.1) (M9.21). Mines laid in previous impulses become active if the conditions of (M2.34) are satisfied.
+6B11,6B,6B11: FINAL FUNCTIONS STAGE
+6B11.02,6B11,Active/deactivation Flame Shields (OG1.12) and Flame Shield Projectors (OG7.12)
+6B11.03,6B11,Announce emergency deceleration (C8.0).
+6B11.04,6B11,Activate Plasma Cloud Generators (OG3.12), Active Sub Space Coagulators and announce formation (OG4.12)
+6C,6,6C. DOGFIGHT RESOLUTION INTERFACE
+6C03,6C,Announce intent to separate by breakaway (J7.711) and resolve any resulting separations.
+6C04,6C,Determine advantage (J7.6) and resolve any resulting separations (J7.71) or surrenders (J7.73).
+6C06,6C,Drop chaff (D11.3) and (J7.55).
+6C07,6C,Fire weapons at drones launched above if allowed by firing arcs (J7.56).
+6C09,6C,Determine if dogfight drones (J7.53) or drones coming from outside (J7.32) of the dogfight hit their targets (or just what they did hit), and resolve damage.
+6D1.01,6,DisDev Declaration Step: Announce intention to use displacement device on the current impulse, the unit to be displaced, and (if Andromedan) the direction in which displacement will be made (G16.31).
+6D1.02,6,Fire Decision Step: All players secretly and simultaneously decide what direct-fire weapons to fire and the targets of those weapons. At this point, EW points being generated can be adjusted under (D6.315) by reserve power or various other means. (Note that lending of EW is adjusted in 6B3.) PPD wavelock release (E11.333).

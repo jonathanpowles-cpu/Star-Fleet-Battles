@@ -1,0 +1,102 @@
+LMC Lasers, HeavyLaser, MediumLaser, LightLaser, EarlyLaser
+Baduvai, CPA, MDM
+Eneen, NBW, NBN, NG, Plasma
+Maghadim, TB, MDM
+Uthiki, PL, BD
+Jumokian,
+Chomak,
+Yorl Septs,
+
+HeavyLaser, Heavy Laser
+Range,0,1-2,3-6,7-12,13-30,31-50,51-70,71-100
+1,14,14,14,8,3,2,1,1
+2,14,14,12,8,3,1,1,0
+3,14,12,12,6,2,0,0,0
+4,12,12,10,3,1,0,0,0
+5,12,10,10,3,0,0,0,0
+6,10,10,10,2,0,0,0,0
+
+MediumLaser, Medium Laser
+Range,0,1-2,3-6,7-12,13-20,21-30,31-50
+1,7,6,4,3,2,2,1
+2,6,5,4,3,1,1,0
+3,5,5,3,2,1,0,0
+4,5,4,3,2,0,0,0
+5,4,4,2,1,0,0,0
+6,4,3,2,1,0,0,0
+
+LightLaser, Light Laser
+Range,0,1-2,3-6,7-12
+1,5,5,1,1
+2,5,4,1,0
+3,4,4,0,0
+4,4,3,0,0
+5,3,3,0,0
+6,3,2,0,0
+
+EarlyLaser, Early Laser
+Range,0,1-2,3-6,7-12,13-20,21-30
+1,6,5,3,2,1,1
+2,5,5,2,1,1,1
+3,5,4,2,1,1,0
+4,5,4,1,1,0,0
+5,4,3,1,0,0,0
+6,4,3,0,0,0,0
+
+Plasma,PLASMA E TORPEDO TABLE
+RANGE,0-5,6-10,11-12,13-14,15
+TYPE E,15,12,8,5,1
+BOLT,1-4,1-3,1-2,N/A,N/A
+
+BD, Boson Drill
+RANGE,0,1-2,3-5,6-9,10-15,16-21,22-28
+TO-HIT,N/A,10,9,8,7,6,5
+DMG,N/A,6(2),5(2),4(2),3(2),2(2),1(2)
+
+PL, Positron Lancet
+RANGE,0-1,2-4,5-8,9-12,13-18,19-24
+TO-HIT,1-6,1-5,1-4,1-4,1-3,1-2
+DMG-STD,N/A,1d6+2,1d6+2,1d6+2,1d6+2,1d6+2
+DMG-OVLD,1d6+6,1d6+6,1d6+6,N/A,N/A,N/A
+
+TB, Tachyon Beam
+RANGE,0,1-3,4-5,6-8,9-15,16-24
+TO-HIT,11/9,10/8,9/7,8/6,7/5,6/4
+DMG-STD,N/A,6,5,4,3,2
+DMG-OVLD,10,9,7,6,N/A,N/A
+
+NBW, Neutron Beam (Wide)
+RANGE,0,1-2,3-6,7-12,13-20,21-30
+1,0,12,12,6,6,4
+2,0,12,8,4,3,2
+3,0,12,8,4,3,2
+4,0,8,8,4,3,2
+5,0,8,8,4,3,2
+6,0,8,4,2,0,0
+
+NBN, Neutron Beam (Narrow)
+RANGE,0,1-2,3-6,7-12,13-20,21-30
+TO_HIT,N/A,1-5,1-4,1-4,1-3,1-3
+DMG,0,12,12,6,6,4
+
+NG, Neutron Gun (Hasty Rep)
+RANGE,0,1-2,3-6,7-12,13-20,21-30
+TO_HIT,N/A,1-5,1-4,1-3,1-3,N/A
+DMG,0,8,6,4,3,0
+
+CPA,Charged Particle Accelerator
+RANGE,0,1-3,4-6,7-9,10-12,13-15,16-18,19-21,22-24,25-27
+TO-HIT,1-5,1-5,1-4,1-4,1-3,1-3,1-2,1-2,1,1
+Turn 1,6,5,5,4,4,3,3,2,2,1
+Turn 2,14,12,12,10,8,6,6,4,4,2
+Turn 3,24,21,21,18,12,9,9,6,6,3
+
+MDM, Mass Driver Missile
+Type,Hits,DMG,Notes
+ASM,3,5,Damage to any target
+AFM,3,2(8),8 vs SC 6 / 2 vs all others
+CPM,3,1:2,Damage vs shields/internals
+KSM,5,3,Damage to any target
+GBM,3,N/A,Transporter Artillery
+DGM,3,N/A,Gains 10 lab points
+ESM,3,3,Damage to any target

@@ -1,0 +1,41 @@
+NAME,AlphaDrones,1
+SPEED, ,8
+SPEED,S,12
+SPEED,M,20
+SPEED,F,32
+CONTAINER,Type-I,Standard Drone,1.0,4
+CONTAINER,Type-II,Standard Drone,1.0,4
+CONTAINER,Type-III,Standard Drone,1.0,4
+CONTAINER,Type-IIIXX,Standard Drone,2.0,4
+CONTAINER,Type-IV,Heavy Drone,2.0,6
+CONTAINER,Type-V,Heavy Drone,2.0,6
+CONTAINER,Type-VI,Dogfight Drone,0.5,2
+CONTAINER,Type-VII,X Drone,1.0,3
+CONTAINER,Type-VIII,X Drone,1.5,2
+CONTAINER,Type-IX,X Drone,0.5,1
+CONTAINER,Type-H,Huge Drone,3.0,6
+CONTAINER,ADD,ADD Round,0.5,0
+PACKAGE,d,Explosive-0.5SP,0.5,1
+PACKAGE,x,Explosive-1SP,1.0,1
+PACKAGE,X,Explosive-2SP,2.0,1
+PACKAGE,u,Null-0.5SP,0.5,1
+PACKAGE,n,Null-1SP,1.0,1
+PACKAGE,N,Null-2SP,2.0,1
+PACKAGE,r,Armor-0.5SP,0.5,4
+PACKAGE,R,Armor-1SP,1.0,4
+PACKAGE,e,Ext. Armor-0.5SP,0.0,4
+PACKAGE,E,Ext. Armor-1SP,0.0,4
+PACKAGE,P,Probe,1.0,1
+PACKAGE,M,MW,1.0,1
+PACKAGE,C,ECM,1.0,1
+PACKAGE,f,Swordfish-1SP,1.0,1
+PACKAGE,F,Swordfish-2SP,2.0,1
+PACKAGE,s,Spearfish-1SP,1.0,1
+PACKAGE,S,Spearfish-2SP,2.0,1
+PACKAGE,t,Starfish-1SP,1.0,1
+PACKAGE,T,Starfish-2SP,2.0,1
+PACKAGE,v,Stingray-1SP,1.0,1
+PACKAGE,V,Stingray-2SP,2.0,1
+PACKAGE,w,Stonefish-1SP,1.0,1
+PACKAGE,ATG,Active Terminal Guidance,0.0,1
+PACKAGE,XX,Extended Range,0.0,1

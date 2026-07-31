@@ -24,3 +24,7 @@ const Cell& Board::at(Hex h) const {
 void Board::for_each(std::function<void(Hex, const Cell&)> fn) const {
     for (auto& [h, c] : cells_) fn(h, c);
 }
+
+void Board::for_each_mut(std::function<void(Hex, Cell&)> fn) {
+    for (auto& [h, c] : cells_) fn(h, c);
+}

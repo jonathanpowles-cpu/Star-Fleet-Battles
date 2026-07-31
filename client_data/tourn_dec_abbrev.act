@@ -1,0 +1,44 @@
+Acts,root,Activities
+6,Acts,6. IMPULSE PROCEDURE
+6A,6,6A. MOVEMENT SEGMENT
+6A4,6A,6A4: FINAL MOVEMENT ACTIONS STAGE
+6A4.02,6A4,Announce speed changes and change web passage status.
+6B,6,6B. IMPULSE ACTIVITY SEGMENT
+6B01,6B,6B1: INITIAL STAGE
+6B01.02,6B01,Change fire control status
+6B02,6B,6B02: CLOAKING DEVICE STAGE
+6B02.01,6B02,Activate/deactivate cloaking device.
+6B03,6B,6B03: LOCKON STAGE
+6B03.01,6B03,Roll for lockon.
+6B04,6B,6B04: SHIP SYSTEM FUNCTIONS STAGE
+6B04.03a,6B04,Activate/deactivate SubSpace Fields.
+6B04.03b,6B04,Launch Mass Driver Missiles
+6B04.04,6B04,Operate Tractors
+6B04.06,6B04,Attempt to identify seeking weapons.
+6B06,6B,6B06: SEEKING WEAPONS STAGE
+6B06.01,6B06,Release control of seeking weapons.
+6B06.03,6B06,Launch plasma torpedoes.
+6B06.04,6B06,MW Release Step: Deploy drones from SP shuttles.
+6B06.05,6B06,Launch drones.
+6B06.08,6B06,ESG Step: De-activate/activate ESGs.
+6B07,6B,6B07: MARINES ACTIVITY STAGE
+6B07.02,6B07,Operate Shields Step: Drop/raise shields.
+6B07.03,6B07,Operate transporters
+6B08,6B,6B08: SHUTTLE & PF FUNCTIONS STAGE
+6B08.01,6B08,Challenge enemy shuttles to a dogfight (J7.0).
+6B08.03,6B08,Recover/land shuttlecraft/fighters.
+6B08.05,6B08,Launch shuttlecraft/fighters
+6B10,6B,6B10: SEPARATIONS STAGE
+6B10.03,6B10,Lay mines
+6B11,6B,6B11: FINAL FUNCTIONS STAGE
+6B11.02,6B11,Activate/deactive Flame Shields & Flame Shield Projectors
+6B11.03,6B11,Announce emergency deceleration.
+6B11.04,6B11,Activate Plasma Cloud Generators and Sub Space Coagulators
+6C,6,6C.DOGFIGHT RESOLUTION INTERFACE
+6C03,6C,Announce intent to separate by breakoff dogfight
+6C04,6C,Determine dogfight advantage
+6C06,6C,Drop chaff.
+6C07,6C,Fire dogfighting fighter weapons at drones launched.
+6C09,6C,Determine if drones hit dogfightting fighter.
+6D1.01,6,DisDev Declaration Step: Announce displacement device
+6D1.02,6,Fire Decision Step

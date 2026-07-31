@@ -1,0 +1,207 @@
+Board Party, HR, HRvsGuards, HRvsShuttle, HRvsWW, HRvsSS, SD, MC
+Target Modifiers, SmallMod
+Collateral Damage, WW
+Turn Modes, TurnModes
+Cloaking Lock-on Equation, LockOnEquation, LockOnVariables, RangeFactor, SpeedFactor
+Quick Cloaking Lock-on Charts, RetainLockOn, GainingLockOn
+Cloak Adjustment Roll, AdjustRoll
+Drone Packages, DronePackages
+Damage Allcation Chart,DAC
+Lab,LAB
+Firing Arcs,ARCS
+Klingon Wing Arcs,WING-ARCS
+Klingon Boom Arcs,BOOM-ARCS
+
+HR, HIT & RUN TABLE
+NORMAL,CMDO,OUTST,POOR,RESULT
+1,1,1-2,-, SYSTEM DESTROYED & BP RETURNS
+2,2-3,3,1, SYSTEM & BP DESTROYED
+3-5,4,4,2-4, SYSTEM UNDAMAGED & BP DESTROYED
+6,5-6,5-6,5-6, SYSTEM UNDAMAGED & BP RETURNS
+
+HRvsGuards, H&R VS GUARDS
+NORMAL,CMDO,OUTST,POOR,RESULT
+1-3,1-2,1-2,1-4, BP DESTROYED
+4-5,3,3-4,5, BP RETURNS
+6,4-6,5-6,6 CONDUCT H&R
+
+HRvsShuttle, H&R VS MANNED SHUTTLES
+NORMAL,CMDO,OUTST,POOR,RESULT
+1-2,1-3,1-3,1,Shuttle Captured
+3-5,4,4-5,2-4,BP Destroyed
+6,5-6,6,5-6,Issue In Doubt
+
+HRvsWW, H&R VS WILD WEASELS
+NORMAL,CMDO,OUTST,POOR,RESULT
+1,1-2,1-2,1,Voided-Captured
+2-4,3-4,3-4,2-3,Issue In Doubt
+5-6,5-6,5-6,4-6,Explosion
+
+HRvsSS, H&R VS SEEKING SHUTTLES
+NORMAL,CMDO,OUTST,POOR,RESULT
+1,1-3,1-3,1,Deactivated-Captured
+2-5,4-5,4-5,2-4,Issue In Doubt
+6,6,6,5-6,Bobby Trap
+
+SD, PREVENTING SELF-DESTRUCTION
+ROLL,RESULT
+1,Self-destruction is permanently blocked
+2-3,Self-destruction is temporarily blocked - roll again next turn
+4-6,Crew successfully destroys ship
+
+MC, MARINE CASUALTY RESOLUTION
+ROLL,1,2,3,4,5,6,7,8,9,10
+1,0,0,0,0,1,1,1,1,1,1
+2,0,0,1,1,1,1,1,2,2,2
+3,0,1,1,1,2,2,2,2,3,3
+4,0,1,1,2,2,2,3,3,4,4
+5,1,1,2,2,3,3,4,4,5,5
+6,1,1,2,2,3,4,4,5,5,6
+
+SmallMod, Small Target Modifier
+Target Type,,ECM,
+,0,+2,+4
+Shuttles & Heavy Fighters,0-11,12-24,25+
+Fighters & Drones,0-9,10-19,20+
+Nimble Ship,0-14,15-29,30+
+
+WW, WW Collateral Damage
+Damage to Weasel, Damage to Other
+1-2,0
+3-4,1
+5-6,2
+7-10,3
+11-18,4
+19-28,5
+29-40,6
+41-55,7
+56-75,8
+76-95,9
+96+,10
+
+TurnModes, Turn Modes
+Turn Mode, Seeking Weapon, Shuttle/Fighter,AA,A,B,C,D,E,F
+1,1-32,1-11,2-8,2-6,2-5,2-4,2-4,2-3,2-3
+2,,12-23,9-16,7-12,6-10,5-9,5-8,4-6,4-5
+3,,24+,17-24,13-19,11-15,10-14,9-12,7-10,6-9
+4,,,25+,20-26,16-21,15-20,13-17,11-14,10-13
+5,,,,27+,22-28,21-27,18-24,15-20,14-17
+6,,,,,29+,28+,25+,21-29,18-23
+7,,,,,,,,30+,24-29
+8,,,,,,,,,30+
+
+LockOnEquation, Cloak Lock On Equation
+Purpose,Equation
+Retain Lock-On,P=S-(EW adjustment)-RF+SF-4
+Reaquisition Of Lock-On,P=S-(EW adjustment)-RF+SF-10
+
+LockOnVariables, Equation Variables
+Variable,Meaning
+P,Probability of retaining/reaquiring lock-on
+S,Sensor rating of ship trying to lock-on
+EW,Electronic Warfare adjustment
+RF,Range adjustment factor
+SF,Speed adjustment factor
+
+RangeFactor, Range Adjustment Factor
+True Range, RF
+0,-1
+1-4,0
+5-10,1
+11-15,2
+16-20,3
+21-30,4
+31-40,5
+41+,6
+
+SpeedFactor, Speed Adjustment Factor
+Maneuver Rate, SF
+0,-2
+1-4,0
+5-8,1
+9-12,2
+13-15,3
+16-17,4
+18,5
+19+,6
+
+RetainLockOn,Retaining Lockon Versus Cloak (Chance in 6)
+Range/Speed,0,1-4,5-8,9-12,13-15,16-17,18,19+
+0,1,3,4,5,6,7,8,9
+1-4,0,2,3,4,5,6,7,8
+5-10,-1,1,2,3,4,5,6,7
+11-15,-2,0,1,2,3,4,5,6
+16-20,-3,-1,0,1,2,3,4,5
+21-30,-4,-2,-1,0,1,2,3,4
+31-40,-5,-3,-2,-1,0,1,2,3
+41+,-6,-4,-3,-2,-1,0,1,2
+
+GainingLockOn,Gaining Lockon Versus Cloak (Chance in 6)
+Range/Speed,0,1-4,5-8,9-12,13-15,16-17,18,19+
+0,-5,-3,-2,-1,0,1,2,3
+1-4,-6,-4,-3,-2,-1,0,1,2
+5-10,-7,-5,-4,-3,-2,-1,0,1
+11-15,-8,-6,-5,-4,-3,-2,-1,0
+16-20,-9,-7,-6,-5,-4,-3,-2,-1
+21-30,-10,-8,-7,-6,-5,-4,-3,-2
+31-40,-11,-9,-8,-7,-6,-5,-4,-3
+41+,-12,-10,-9,-8,-7,-6,-5,-4
+
+AdjustRoll, Fire At Cloaked Ships
+Die Roll,Result
+1 or 2,Weapon does normal damage
+3 or 4,Weapon does 1/2 damage
+5 or 6,Weapon does 1/4 damage
+7 or more,Weapon does no damage
+
+DronePackages, Drone Package Legend
+Letter,Space,Type
+e,1/2,Explosive
+x,1,Explosive
+X,2,Explosive
+u,1/2,Null
+n,1,Null
+N,2,Null
+r,1/2,Armor
+R,1,Armor
+e,1/2,Ext. Armor
+E,1,Ext. Armor
+P,1,Probe
+M,1,Multi-Warhead
+C,1,ECM
+f,1,Swordfish
+F,2,Swordfish
+s,1,Spearfish
+S,2,Spearfish
+ATG,0,Active Terminal Guidance
+XX,0,Extended Range
+
+DAC, Damage Allocation Chart
+Die Roll,A,B,C,D,E,f,G,H,I,J,K,L,M
+2,<HTML><B><U>Bridge</U></B></HTML>,<HTML><B><U>Flag Bridge</U></B></HTML>,<HTML><B><U>Sensor</U></B></HTML>,<HTML><B><U>Damage Control</U></B></HTML>,<HTML><B><U>A Hull</U></B></HTML>,Left W En,Trans,Tractor,Shuttle,Lab,F Hull,Right W En,Excess Damage
+3,<HTML><B><U>Drone</U></B></HTML>,<HTML><B><U>Phaser</U></B></HTML>,Impulse,Left W En,Right W En,A Hull,Shuttle,<HTML><B><U>Damage Control</U></B></HTML>,Center W En,Lab,Battery,Phaser,Excess Damage
+4,<HTML><B><U>Phaser</U></B></HTML>,<HTML><B><U>Trans</U></B></HTML>,Right W En,Impulse,F Hull,A Hull,Left W En,APR,Lab,Trans,Probe,Center W En,Excess Damage
+5,<HTML><B><U>Right W En</U></B></HTML>,A Hull,Cargo,Battery,Shuttle,<HTML><B><U>Torp</U></B></HTML>,Left W En,Impulse,Right W En,Tractor,Probe,Any Weapon,Excess Damage
+6,F Hull,Impulse,Lab,Left W En,<HTML><B><U>Sensor</U></B></HTML>,Tractor,Shuttle,Right W En,Phaser,Trans,Battery,Any Weapon,Excess Damage
+7,Cargo,F Hull,Battery,Center W En,Shuttle,APR,Lab,Phaser,Any W En,Probe,AHull,Any Weapon,Excess Damage
+8,A Hull,APR,Shuttle,Right W En,<HTML><B><U>Scanner</U></B></HTML>,Tractor,Lab,Left W En,Phaser,Trans,Battery,Any Weapon,Excess Damage
+9,<HTML><B><U>Left W En</U></B></HTML>,F Hull,Cargo,Battery,Lab,<HTML><B><U>Drone</U></B></HTML>,Right W En,Impulse,Left W En,Tractor,Probe,Any Weapon,Excess Damage
+10,<HTML><B><U>Phaser</U></B></HTML>,<HTML><B><U>Tractor</U></B></HTML>,Left W En,Impulse,A Hull,F Hull,Right W En,APR,Lab,Trans,Probe,Center W En,Excess Damage
+11,<HTML><B><U>Torp</U></B></HTML>,<HTML><B><U>Phaser</U></B></HTML>,Impulse,Right W En,Left W En,F Hull,Tractor,<HTML><B><U>Damage Control</U></B></HTML>,Center W En,Lab,Battery,Phaser,Excess Damage
+12,<HTML><B><U>Aux Control</U></B></HTML>,<HTML><B><U>Emer Bridge</U></B></HTML>,<HTML><B><U>Scanner</U></B></HTML>,<HTML><B><U>Probe</U></B></HTML>,<HTML><B><U>F Hull</U></B></HTML>,Right W En,Trans,Shuttle,Tractor,Lab,AHull,Left W En,Excess Damage
+
+LAB, SCIENTIFIC RESEARCH
+RANGE,0,1,2,3,4,5,6,7,8,9
+1,10,9,8,7,6,5,4,3,2,1
+2,9,8,7,6,5,4,3,2,1,0
+3,8,7,6,5,4,3,2,1,0,0
+4,7,6,5,4,3,2,1,0,0,0
+5,6,5,4,3,2,1,0,0,0,0
+6,5,4,3,2,1,0,0,0,0,0
+
+ARCS, FIRING ARCS,data/sfbol/charts/firing_arcs.gif
+
+WING-ARCS, KLINGON WING ARCS,data/sfbol/charts/D2-32.jpg
+
+BOOM-ARCS, KLINGON BOOM ARCS,data/sfbol/charts/D2-33.jpg
+

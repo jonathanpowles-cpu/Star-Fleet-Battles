@@ -1,0 +1,7 @@
+NAME,OmegaImpTorp,2
+SPEED, ,32
+CONTAINER,Imp Torp-SH,1.0,48
+CONTAINER,Imp Torp-H,1.0,32
+CONTAINER,Imp Torp-M,1.0,24
+CONTAINER,Imp Torp-L,1.0,16
+PACKAGE,Standard,Real,1.0,1

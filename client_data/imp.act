@@ -1,0 +1,150 @@
+Acts,root,Activities
+6,Acts,6. IMPULSE PROCEDURE
+6A,6,6A. MOVEMENT SEGMENT
+6A1,6A,6A1: INVOLUNTARY MOVEMENT STAGE
+6A1.01,6A1,Move playing pieces in using black hole rules (P4.1).
+6A1.02,6A1,Gravity waves advance and their effect is applied immediately (P9.2).
+6A1.03,6A1,Movement caused by nebula (P6.5) on certain impulses.
+6A1.04,6A1,Andromedan ships take nebula damage (P6.31) on impulses #8 and #24.
+6A2,6A,6A2: VOLUNTARY MOVEMENT STAGE
+6A2.01,6A2,Declare direction for accumulation of Directed Turn Mode (C3.81).
+6A2.02,6A2,Determine which units will move his impulse (C1.4).
+6A2.03,6A2,Declare and resolve evacuation and escapes under Catastrophic Damage due to Impending Destruction (D21.22).
+6A2.04,6A2,Move those playing pieces scheduled to move in accordance with the rules. See (C1.31). This will include base rotations on certain impulses (C3.7). This may include, on impulse #32 only, landing on or taking off from a planet (P2.41) or atmospheric flight (P2.8). Determine, but do not resolve, any damaged caused by movement.
+6A3,6A,6A3: DAMAGE DURING MOVEMENT STAGE
+,,In each of the following steps, allocate the damage (D4.0) as it is resolved, step by step.
+6A3.01,6A3,Resolve actions of ESGs (G23.5) [including interaction of ESGs and mines (G23.61)].
+6A3.02,6A3,Resolve damage from enveloping plasma torpedoes (FP5.3).
+6A3.03,6A3,Resolve damage from seeking weapons not resolved above (F2.3).
+6A3.04,6A3,Resolve damage from asteroids (P3.2) and rings (P2.223).
+6A3.05,6A3,Determine any collisions with planets (P2.212) or moons (P2.23). Resolve any crash landings (P2.431) or catastrophic landings (P2.435).
+6A3.06,6A3,Controlled mines can be ordered to detonate (M5.201). Resolve damage from mines (M0.0).
+6A3.07,6A3,Resolve explosions from destroyed units (D5.0) and any resulting ship separations (G12.0) or escapes (D21.4).
+6A3.08,6A3,Resolve damage to Andromedan satellite ships in the hangar bay (G19.213).
+6A3.09,6A3,Roll for possible critical hits (D8.0).
+6A3.10,6A3,Resolve breakdowns (C6.54), (C3.61). (G7.3222).
+6A3.11,6A3,Resolve Energy Balance Due to Damage (D22.0). This could reduce speed or halt certain functions.
+6A4,6A,6A4: FINAL MOVEMENT ACTIONS STAGE
+6A4.01,6A4,Release ships from tractor beams (G7.0) if these systems were destroyed or lost power in this segment. (Involuntary release from stasis is in 6B6.)
+6A4.02,6A4,Announce movement changes: intention to adopt/drop pursuit (C1.322), evasion (C1.3223), or station keeping plotting (C1.3224): drop/adept erratic maneuvers (C10.0): make speed changes under (C12.0); forgo or resume web passage status (G10.533). These decisions are made secretly and simultaneously in advance of all announcements in this step.
+6A4.03,6A4,Reveal the presence of a minefield (M7.1).
+6A4.04,6A4,Emergency deceleration takes effect (C8.0).
+6B,6,6B. IMPULSE ACTIVITY SEGMENT
+6B01,6B,6B1: INITIAL STAGE
+6B01.01,6B1,Resolve damage from pulsar outburst (P5.2).
+6B01.02,6B1,Switch fire control from active (D6.6) to passive mode (Dl 9.0) or vice versa. This is the time for voluntary changes; involuntary changes [e.g. wild weasel (J3.0), cloak (G13.0)j occur as required at other points (D6.63).
+6B02,6B,6B02: CLOAKING DEVICE STAGE
+6B02.01,6B02,Activate (G13.14) or deactivate (G13.15) cloaking device.
+6B02.02,6B02,Announce range and bearing if using hidden movement of cloaked ships (G13.61) on impulses #8 and #24.
+6B02.03,6B02,Attempt to destroy own cloaking device (G13.162). This can only be attempted once in any period of 32 impulses.
+6B03,6B,6B03: LOCKON STAGE
+6B03.01,6B03,Roll to determine if lockon has been lost, retained, or regained due to changing conditions (D6.1). Note that this may be repeated several times during the impulse if conditions (particularly cloaked ships and WW) change. This is also the point at which self-controlled ATG and warp-seeking drones which are beyond tracking range of their targets lose tracking, and the point at which the conditions of (F3.31) are judged.
+6B03.02,6B03,Scouts and carriers use reserve power to increase EW available for lending (H7.2). Legendary Weapons Officer uses his reserve EW point (G22.71).
+6B03.03,6B03,Scouts begin or voluntarily end lending (G24.212). Scouts deploy reserve EW (G24.2114).
+6B03.04,6B03,Tactical Intelligence Interrogations (D17.23) are conducted. Reports from probe drones (FD6.32) and (FD6.33) are received.
+6B03.05,6B03,ECM drones begin to generate EW (FD9.12). Fighters change which EW source they are accepting lending from (J4.922).
+6B03.06,6B03,Determine disengagement by separation (C7.21).
+6B04,6B,6B04: SHIP SYSTEM FUNCTIONS STAGE
+6B04.01,6B04,Detect individual mines (M7.2). Automatic mine detection (M7.34).
+6B04.02,6B04,Reinforce web; recalculate strength (G10.3).
+6B04.03,6B04,Web Step: Lay web (G10.23). Lay web anchors (G26.3). Assume or drop web anchor status(G10.116).
+6B04.03a,6B04,SubSpace Fields are activated (OG14.23) or deactivated (OG14.242).
+6B04.03b,6B04,Launch Mass Driver Missiles
+6B04.04,6B04,Operate Tractors: Activate or release tractor beams (G7.0). This is the only time for voluntary activation or release; involuntary release may occur at various points (destruction of tractor, launch of WW, etc.). This could result in an immediate tractor auction (G7.414).
+6B04.05,6B04,Attach pods to a tug (G14.4). (Pods are dropped in 6B10.)
+6B04.06,6B04,Labs (G4.2), scouts (G24.25), Aegis (Dl 3.3), and SWACS (J9.12) attempt to identify seeking weapons and mines (M7.5).
+6B05,6B,6B05: SCOUT FUNCTIONS STAGE
+6B05.01,6B05,SWACS (J9.12) and scouts attempt to attract drones (G24.23), break lock-on's (G24.22).
+6B05.02,6B05,SWACS (J9.2) and scout PFs (K1.756) go wild.
+6B06,6B,6B06: SEEKING WEAPONS STAGE
+6B06.01,6B06,SW Control Step: Voluntary transfers (F3.5) or release (F3.4) of control of seeking weapons. Involuntary transfers and releases can occur at many other points in the sequence (F3.53).
+6B06.02,6B06,Drop electronic warfare pods (J4.9622).
+6B06.03,6B06,Launch plasma torpedoes (FPl.3) and/or pseudo-plasma torpedoes (FP6.12).
+6B06.04,6B06,MW Release Step: Deploy drones from MW drones (FD8.22) and SP shuttles (FD7.33).
+6B06.05,6B06,Launch drones (FD1.2).
+6B06.06,6B06,Launch probes (for info, not as weapon) (G5.2).
+6B06.07,6B06,Drop chaff (D11.3).
+6B06.08,6B06,ESG Step: De-activate and (subsequently) activate expanding sphere generators (G23.3) based on previous announcements. Announce operation of ESGs (G23.3); cancel previous announcement (G23.33). Size and strength are announced (G23.46).
+6B06.09,6B06,SFG Step: Activate and (subsequently) de-activate stasis field generators (G16.11). Involuntary deactivations become effective (G16.14).
+6B06.10,6B06,Shock Step: Resolve shock effects from the launch of seeking weapons (D23.32). (Shock from DF weapons is in 6D5.) Accumulate SEPs and roll for breakdown as required.
+6B07,6B,6B07: MARINES ACTIVITY STAGE
+6B07.01,6B07,Mutiny Step: First die roll for mutiny (G6.20).
+6B07.02,6B07,Operate Shields Step: Drop shields; restore shields dropped previously (D3.5).
+6B07.03,6B07,Operate transporters (G8.0), including the laying of T-bombs (M3.22). Block boarding by (G8.23). Resolve hit and run raids (D7.8) conducted by Transporter.
+6B07.04,6B07,Reactive guard assignments are made (D7.86).
+6B07.05,6B07,Crew unit transfers under (C13.471), (C13.951), and (G19.28) are made. Transfer of cargo under (G25.23) is conducted.
+6B07.06,6B07,Mines laid two impulses previously by Transporter (M3.22) become active if the laying ship is out of detonation range (M3.32).
+6B08,6B,6B08: SHUTTLE & PF FUNCTIONS STAGE
+6B08.01,6B08,Challenge enemy shuttles to a dogfight (J7.0).
+6B08.02,6B08,Fighters may drop warp booster packs (J5.41).
+6B08.03,6B08,Recover (land) shuttlecraft (J1.6), fighters, fast patrol ships (K2.31), web anchors (G26.35), and cloaked decoys (G27.3). Shuttles land on enemy ships (J1.65) and (J1.63).
+6B08.04,6B08,Release of (J1.34) restrictions (after appropriate delay) for previously-launched shuttles.
+6B08.05,6B08,Launch shuttlecraft (J1.5), fighters, fast patrol ships (K2.32), wild weasels (J3.0), suicide shuttles, scatter packs (FD7.0), and cloaked decoys (G27.3). Involuntary release of tractor beams to allow wild weasel launch (J3.452) may be a part of this action.
+6B08.06,6B08,Move shuttles between shuttle bay and balcony (J1.53).
+6B08.07,6B08,Deck Crew Actions Step (J4.817). Record deck crews which begin or finish actions and incremental progress on assigned actions.
+6B09,6B,6B09: SATELLITE SHIP FUNCTIONS STAGE
+6B09.01,6B09,Recover satellite ships and energy modules (G19.412) via Transporter. (No recovery by DisDev.)
+6B09.02,6B09,Launch satellite ships and energy modules (G19.411) via Transporter. (Launch by DisDev is in 6D5.)
+6B09.03,6B09,Transfer energy to an energy module (G20.31).
+6B10,6B,6B10: SEPARATIONS STAGE
+6B10.01,6B10,Drop pods from a tug (G14.3).
+6B10.02,6B10,Rear hulls of ships that separated 64 impulses previously are stabilized (G12.54).
+6B10.03,6B10,Lay mines (other than by transporters) (M2.1) (M9.21).
+6B10.04,6B10,Mines laid in previous impulses become active if the conditions of (M2.34) are satisfied.
+6B11,6B,6B11: FINAL FUNCTIONS STAGE
+6B11.01,6B11,Magellanic Fighters announce the activation/deactivation of overdrive (MJ2.11)
+6B11.02,6B11,Active/deactivation Flame Shields (OG1.12) and Flame Shield Projectors (OG7.12)
+6B11.03,6B11,Announce emergency deceleration (C8.0).
+6B11.04,6B11,Activate Plasma Cloud Generators (OG3.12), Activate Sub Space Coagulators and announce formation (OG4.12)
+6B11.05,6B11,Roll to determine new facing of tumbling ships (C6.5511). If this is the last tumbling impulse, see (C6.554).
+6B11.06,6B11,Roll to reprogram the computer; impulses 8 and 24 only; see (G11.341).
+6C,6,6C. DOGFIGHT RESOLUTION INTERFACE
+6C01,6C,(PA PANEL RADIATION DAMAGE)
+,,(Only on impulses #4, #12, #20, #28.)
+6C02,6C,Fighters carrying booster packs may drop them (J7.72). Resolve any resulting separations. See also (J7.13).
+6C03,6C,Announce intent to separate by breakaway (J7.711) and resolve any resulting separations.
+6C04,6C,Determine advantage (J7.6) and resolve any resulting separations (J7.71) or surrenders (J7.73).
+6C05,6C,Launch dogfight drones (J7.53) within dogfight (by one shuttle in a dogfight against another shuttle in that same dogfight only).
+6C06,6C,Drop chaff (D11.3) and (J7.55).
+6C07,6C,Fire weapons at drones launched above if allowed by firing arcs (J7.56).
+6C08,6C,Resolve phaser fire between fighters in the dogfight (J7.52). See (J7.66).
+6C09,6C,Determine if dogfight drones (J7.53) or drones coming from outside (J7.32) of the dogfight hit their targets (or just what they did hit), and resolve damage.
+6C10,6C,Resolve any collisions or separations resulting from (J7.6621).
+6C11,6C,Andromedan PA panels absorb energy from radiation (P15.7) and heat (P10.6) zones. If this results in the destruction of the Andromedan ship, the explosion is resolved in 6D5; the destroyed ship can take no further actions beyond this point.
+6C12,6C,Resolve damage to Andromedan satellite ships in the hangar bay (G19.213).
+6C13,6C,Ships suffer crew casualties from radiation zones (P15.l) and damage from heat zones (P10.1).
+6D,6,6D. DIRECT-FIRE WEAPONS SEGMENT
+6D1,6D,6D1: FIRE ALLOCATION STAGE
+6D1.01,6D1,DisDev Declaration Step: Announce intention to use displacement device on the current impulse, the unit to be displaced, and (if Andromedan) the direction in which displacement will be made (G16.31).
+6D1.02,6D1,Fire Decision Step: All players secretly and simultaneously decide what direct-fire weapons to fire and the targets of those weapons. At this point, EW points being generated can be adjusted under (D6.315) by reserve power or various other means. (Note that lending of EW is adjusted in 6B3.) PPD wavelock release (E11.333).
+6D1.03,6D1,Fire Declaration Step: All direct-fire weapons fire is announced, including specific weapons and targets. Changes to EW levels under (D6.315) are also announced. Whether a Web Caster will be fired in Web Fist (E14.11) mode is announced. All of these announcements are simultaneous.
+6D2,6D,6D2: DIRECT-FIRE WEAPONS FIRE STAGE
+6D2.01,6D2,General note: Weapons are fired in the specific order given. Resulting internal damage is not resolved until the Damage Resolution Stage. At the points marked "§", reserve power may be used under (H7.134) to mitigate damage.
+6D2.02,6D2,PPD Step: PPDs roll for wavelock if available and required (E11.3). PPDs score damage (E11.332). § Shield damage is marked; internal damage is recorded and resolved in 6D4.
+6D2.03,6D2,First Hellbore Firing Option (E10.44). § Shield damage is marked, internal damage is recorded to be resolved in 6D4.
+6D2.04,6D2,Direct-Fire Step: All Direct-Fire Weapons not listed separately fire. § Shield damage is marked; internal damage is recorded to be resolved later (E1.11) in 6D4.
+6D2.05,6D2,Aegis Fire Steps: Weapons able to use Aegis Fire Control fire their remaining pulses (D13.0). § Shield damage is marked: internal damage is recorded to be resolved in 6D4.
+6D2.05.01,6D2.05,Aegis Fire Opportunity #2
+6D2.05.02,6D2.05,Aegis Fire Opportunity #3
+6D2.05.03,6D2.05,Aegis Fire Opportunity #4
+6D2.06,6D2,Second Hellbore Firing Option (E10.44). § Shield damage is marked; internal damage recorded and resolved in 6D4.
+6D3,6D,6D3: WEB CASTER STAGE
+6D3.01,6D3,Previously fired free standing webs become effective (E12.22).
+6D3.02,6D3,Web Casters fire (E12.13).
+6D3.03,6D3,Previously effective freestanding webs dissipate (E12.26).
+6D4,6D,6D4: DIRECT-FIRE WEAPONS DAMAGE RESOLUTION STAGE
+6D4.01,6D4,Resolve escapes, evacuations, and ship separations under catastrophic damage rules (D2l .0).
+6D4.02,6D4,Allocate the internal damage from all direct fire weapons above (D4.0). Note that a weapon destroyed in the first of the many various firing steps would still be able to fire (if allocated to do so) in its appropriate later step in the same impulse because no damage is resolved until this point.
+6D5,6D,6D5: DIRECT-FIRE WEAPONS CONSEQUENCES STAGE
+6D5.01,6D5,Resolve explosions (D5.0) from destroyed units (if any) (D4.4), then repeat stage 6D4. (No weapons are fired; this is used to resolve any damage resulting from the explosions.)
+6D5.02,6D5,Resolve damage to Andromedan satellite ships in the hangar bay (G19.213).
+6D5.03,6D5,Displacement devices operate (G18.3) and can be used to launch satellite ships (G19.42).
+6D5.04,6D5,Roll for possible critical hits (D8.0).
+6D5.05,6D5,Resolve Energy Balance Due to Damage (D22.0). This could reduce speed or halt certain functions.
+6D5.06,6D5,Release ships from tractor beams (G7.0) if these systems were destroyed in this segment (Involuntary release from stasis is in 6B6.)
+6D5.07,6D5,Electronic warfare (D6.3) benefits of any systems destroyed in Segment 6D are lost (e.g. scout channels destroyed, etc.)
+6D5.08,6D5,Shock Step: Resolve shock effects (D23.32) from the firing of direct-fire weapons. (Shock from seeking weapons is resolved in 6B6.) Accumulate SEPs and roll for breakdown as required.
+6E,6,6E. POSTCOMBAT SEGMENT
+6E1,6E,Roll for the possibility of UIM breakdown (D6.52).
+6E2,6E,Start/stop erratic maneuvers takes effect (C10.0).
+6E3,6E,Deploy Reserve Power for "delayed uses" under (H7.132).

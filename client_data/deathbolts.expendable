@@ -1,0 +1,6 @@
+NAME,DeathBolts,1
+SPEED, ,12
+SPEED,M,20
+SPEED,F,32
+CONTAINER,Standard,Death Bolt,1.0,2
+PACKAGE,d,Explosive,1.0,1
