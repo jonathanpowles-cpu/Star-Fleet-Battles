@@ -1,8 +1,8 @@
 {
- "calls": 494,
- "input": 571488,
- "output": 146879,
+ "calls": 499,
+ "input": 577005,
+ "output": 148354,
  "cache_read": 0,
  "cache_write": 0,
- "cost": 2.611766000000003
+ "cost": 2.6375500000000027
 }

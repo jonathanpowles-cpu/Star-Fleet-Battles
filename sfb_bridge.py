@@ -753,6 +753,9 @@ class TextPane(scrolledtext.ScrolledText):
                             lmargin1=24, lmargin2=24),
         "sub":     dict(foreground=MUTED),
         "body":    dict(foreground=FG),
+        # the single station-order style: bold, near-white - the strongest
+        # thing in a quadrant short of the green act-now band.
+        "order":   dict(foreground="#e6edf3", font=("Consolas", 10, "bold")),
     }
 
     def __init__(self, master, **kw):
@@ -827,16 +830,13 @@ class TextPane(scrolledtext.ScrolledText):
             self.insert("end", ln + "\n", "cyc")
         elif s.startswith("EAF"):
             self.insert("end", ln + "\n", "eaf")
-        elif s.startswith("FIRE") or s.startswith("GUNNERY"):
-            self._warnsplit(ln, "fire")
-        elif s.startswith("MOVE") or s.startswith("HELM"):
-            self._warnsplit(ln, "move")
-        elif s.startswith("DEFENCE"):
-            self._warnsplit(ln, "seek")
-        elif s.startswith("SCIENCE") or s.startswith("ENGINEERING"):
-            self.insert("end", ln + "\n", "eaf")
-        elif s.startswith("SHUTTLE BAY"):
-            self.insert("end", ln + "\n", "cyc")
+        # Station orders all share ONE tag: inside a quadrant the section header
+        # already says what kind of line this is, so per-station rainbow colours
+        # only added noise. Colour now encodes URGENCY, not category: green band
+        # (act now) > bold order > plain > dim rationale.
+        elif s.startswith(("FIRE", "GUNNERY", "MOVE", "HELM", "DEFENCE",
+                           "SCIENCE", "ENGINEERING", "SHUTTLE BAY")):
+            self._warnsplit(ln, "order")
         elif ln.startswith("[ORDER]"):
             self._warnsplit("• " + ln.split("]", 1)[1].strip(), "sideA")
         elif ln.startswith("[advise]"):
@@ -926,29 +926,17 @@ class Bridge(tk.Tk):
         self.flag_panes = {}
         for side in (ai, advise):
             ff = tk.Frame(self.nb, bg=BG)
-            head, panes = self._make_quadrants(ff, head_height=2)
+            head, panes = self._make_quadrants(ff, head_height=3)
             self.flag_panes[side] = (head, panes)
             self.nb.add(ff, text=f"Flag: {side}")
 
         self.nb.add(self.board, text="Board")
 
-        # --- BRIDGE (with a side toggle: whose bridge are we standing on?)
-        f = tk.Frame(self.nb, bg=BG)
-        bbar = tk.Frame(f, bg=BG)
-        bbar.pack(fill="x", padx=10, pady=(8, 2))
-        tk.Label(bbar, text="BRIDGE OF:", bg=BG, fg=MUTED,
-                 font=("Segoe UI", 9, "bold")).pack(side="left", padx=(0, 8))
-        self.bridge_side = tk.StringVar(value=self.advise)
-        for s, colr in ((self.advise, SIDE_B), (self.ai, SIDE_A)):
-            tk.Radiobutton(bbar, text=s, value=s, variable=self.bridge_side,
-                           command=self._render_bridge, bg=BG, fg=colr,
-                           selectcolor=BG, activebackground=BG, activeforeground=colr,
-                           font=("Segoe UI", 10, "bold")).pack(side="left", padx=4)
-        self.flag_lbl = tk.Label(bbar, text="", bg=BG, fg=GOLD, font=("Segoe UI", 9))
-        self.flag_lbl.pack(side="right")
-        self.bridge_txt = TextPane(f)
-        self.bridge_txt.pack(fill="both", expand=True)
-        self.nb.add(f, text="Bridge")
+        # The old BRIDGE tab is retired: its unique content moved out - EA-phase
+        # detection + fleet plan + flagship name to the Flag tabs, per-enemy
+        # threat assessment to the ship's Tactical quadrants (click the enemy),
+        # voiced chatter was already on Comms. Errors and the stub-save
+        # fallback render on the Referee tab.
 
         # --- SHIPS
         sf = tk.Frame(self.nb, bg=BG)
@@ -1111,7 +1099,7 @@ class Bridge(tk.Tk):
                         holes = [f"#{i+1}" for i, x in enumerate(v) if x == 0]
                         out.append(f"  {lab}: {v}"
                                    + (f"   DOWN: {', '.join(holes)}" if holes else ""))
-                self.bridge_txt.set_lines(out, self.ai)
+                self.ref_txt.set_lines(out, self.ai)
             except Exception:
                 pass
             return
@@ -1129,7 +1117,7 @@ class Bridge(tk.Tk):
                 pass
         except Exception:
             self.status.configure(text="error building orders")
-            self.bridge_txt.set_lines(traceback.format_exc().splitlines())
+            self.ref_txt.set_lines(traceback.format_exc().splitlines())
             return
         note = f"  [reloaded {', '.join(rl)}]" if rl else ""
         self.status.configure(
@@ -1144,7 +1132,6 @@ class Bridge(tk.Tk):
             self._update_alerts()
         except Exception:
             pass
-        self._render_bridge()
         self._render_ship()
         self._render_comms()
         try:
@@ -1216,173 +1203,6 @@ class Bridge(tk.Tk):
         got = self.voice.get_or_request(scene)
         return got if got else fallback
 
-    @staticmethod
-    def _ship_blocks(lines):
-        """Split engine output into {ship label: [detail lines]}.
-
-        The previous version guessed which ship a detail line belonged to from a
-        global condition, which meant the FLAGSHIP - whose block is emitted first
-        - ended up with no detail at all. Detail lines are indented under their
-        header, so track the current header and attach to it.
-        """
-        blocks, order, cur = {}, [], None
-        for ln in lines:
-            if ln.startswith(("[ORDER]", "[advise]")):
-                body = ln.split("]", 1)[1].strip()
-                cur = body.split(" (")[0].strip()      # label is before " (TYPE,"
-                blocks.setdefault(cur, {"head": body, "detail": []})
-                if cur not in order:
-                    order.append(cur)
-            elif ln.startswith(("---", "===")):
-                cur = None
-            elif cur and ln.startswith("    "):
-                blocks[cur]["detail"].append(ln.strip())
-        return blocks, order
-
-    def _render_bridge(self):
-        st = self.state
-        if not st:
-            return
-        side = self.bridge_side.get()
-        is_ai = side.upper() == self.ai.upper()
-        enemy = self.ai if not is_ai else self.advise
-        mine = [s for s in st["ships"] if s["race"].upper() == side.upper()]
-        # Everything not on the selected side is a contact. Derived from `side`,
-        # not from self.ai/self.advise, so the whole view flips with the toggle.
-        foes = [s for s in st["ships"] if s["race"].upper() != side.upper()]
-        if not mine:
-            self.bridge_txt.set_lines([f"=== {side} ===", f"No {side} ships on the board."])
-            self.flag_lbl.configure(text="")
-            return
-
-        # The brief is given FROM the flagship - it is that bridge we stand on.
-        flag = cmd.flagship(mine)
-        self.flag_lbl.configure(
-            text=f'flagship: {flag["label"]} ({flag.get("type","?")})' if flag else "")
-
-        blocks, _order = self._ship_blocks(self.lines)
-        events = [l[2:] for l in self.lines if l.startswith("* ")]
-        turn, imp = st["turn"], st["impulse"]
-        log = getattr(cmd, "_last_log", None)
-        try:
-            import sfb_log
-            log = sfb_log.restrict_to_ships(sfb_log.parse(),
-                                            [s["label"] for s in st["ships"]])
-        except Exception:
-            log = None
-
-        # Energy Allocation is the moment the turn is actually decided, so brief
-        # differently there: plan and power, not per-impulse fiddling. It happens
-        # BETWEEN turns, so "impulse 0" only catches the opening turn - after that
-        # the signal is the client's own log ("X has started/finished Energy
-        # Allocation"). We are in EA while a start is outstanding.
-        ea_phase = imp <= 0
-        if log:
-            pending = set()
-            for e in (log.get("events") or []):
-                if e.get("kind") == "ea":
-                    (pending.add if e.get("what") == "started" else pending.discard)(e["ship"])
-            if pending:
-                ea_phase = True
-                self._ea_pending = sorted(pending)
-            else:
-                self._ea_pending = []
-
-        hdr = (f'=== {side.upper()} FLAG BRIDGE'
-               + (f' - {flag["label"]}' if flag else "") + " ===")
-        role = ("ORDERS - the AI plays this side; execute them faithfully."
-                if is_ai else "ADVICE - your call.")
-        waiting = getattr(self, "_ea_pending", [])
-        phase = ("ENERGY ALLOCATION - set power for the whole turn now"
-                 + (f" (allocating: {', '.join(waiting)})" if waiting else "")
-                 if ea_phase else
-                 f"IMPULSE {imp} of 32 - act as the impulse unfolds")
-        out = [hdr, role, f"PHASE: {phase}", ""]
-
-        # ---- voiced bridge chatter, grounded in this side's own facts
-        own_facts = []
-        for lbl in [s["label"] for s in mine]:
-            b = blocks.get(lbl)
-            if b:
-                own_facts.append(b["head"])
-                own_facts += b["detail"][:4]
-        sc = V.Scene(side=side, role="orders" if is_ai else "advice",
-                     turn=turn, impulse=imp, ships=mine, facts=own_facts,
-                     events=events, enemy_side=enemy, enemy_ships=foes, mode="bridge",
-                     focus=flag["label"] if flag else "")
-        voiced = self._voiced(sc, [])
-        out += ["~ " + v for v in voiced] if voiced else ["~ (voicing the bridge...)"]
-        out.append("")
-
-        # ---- FLEET PLAN: one intent for the whole squadron
-        try:
-            plan = cmd.fleet_plan(side, mine, foes, st, log, turn, imp)
-        except Exception:
-            plan = []
-        if plan:
-            out.append(f"--- {side} FLEET PLAN, TURN {turn} ---")
-            out += ["  PLAN " + p for p in plan]
-            out.append("")
-
-        # ---- OUR SHIPS: everything. Flagship first, and it now gets its detail.
-        out.append(f"--- {side} SHIPS ({'energy allocation' if ea_phase else 'impulse orders'}) ---")
-        ordered = ([flag] if flag else []) + [s for s in mine
-                                              if not flag or s["label"] != flag["label"]]
-        for s in ordered:
-            lbl = s["label"]
-            lead = "  (FLAG)" if flag and lbl == flag["label"] else ""
-            b = blocks.get(lbl)
-            # Ship name goes on its own bold line IMMEDIATELY above its impulse
-            # order, so the two read as a single "who / what to do" block; the
-            # supporting detail follows underneath.
-            out.append(f'@@{lbl}{lead}' + (f'   {b["head"].split("(", 1)[1]}'
-                                           if b and "(" in b["head"] else ""))
-            if not b:
-                out.append("    (no orders generated for this ship)")
-                continue
-            det = b["detail"]
-            order_lines = [d for d in det if d.startswith(">>>")]
-            why_lines = [d for d in det if d.startswith("      ") or
-                         (det.index(d) > 0 and det[det.index(d) - 1].startswith(">>>")
-                          and not d.startswith((">>>", "MISSION", "POSTURE", "TRADE", "EAF",
-                                                "MOVE", "FIRE", "SHIELD", "WEASEL",
-                                                "MANEUVER", "DISRUPTORS", "FIGHTERS", "HET")))]
-            # 1. the executable order first
-            out += order_lines
-            out += ["          " + d for d in why_lines]
-            # 2. then the reasoning
-            rest = [d for d in det if d not in order_lines and d not in why_lines]
-            if ea_phase:
-                pri = [d for d in rest if d.startswith(("EAF", "MISSION", "POSTURE", "TRADE"))]
-                out += ["    " + d for d in pri]
-                out += ["    " + d for d in rest
-                        if d not in pri and d.startswith(("DISRUPTORS", "SEEKERS", "SCREEN",
-                                                          "DOCTRINE", "SHIELD", "WEASEL",
-                                                          "FIGHTERS"))]
-            else:
-                out += ["    " + d for d in rest]
-            out.append("")
-
-        # ---- ENEMY: no orders. What he can do to us, what he has spent.
-        out.append(f"--- {enemy} CONTACTS (assessment only) ---")
-        for f in sorted(foes, key=lambda z: min(
-                H.hex_distance((z["x"], z["y"]), (m["x"], m["y"])) for m in mine) if mine else 0):
-            out.append(f'* {f["label"]} ({f.get("type","?")}, spd {f.get("speed",0)}, '
-                       f'hex {f["x"]:02d}{f["y"]:02d})')
-            try:
-                for t in cmd.threat_assessment(f, mine, st, log, turn, imp):
-                    out.append("    " + t)
-            except Exception as e:
-                out.append(f"    (assessment unavailable: {e})")
-            out.append("")
-
-        try:
-            import sfb_condense as CD
-            out = CD.crewify(out)
-        except Exception:
-            pass
-        self.bridge_txt.set_lines(out, self.ai)
-
     def _render_ship(self):
         if not self.state or not self.sel_ship:
             return
@@ -1419,8 +1239,28 @@ class Bridge(tk.Tk):
             buckets = CD.bucket_orders(body)
         except Exception:
             buckets = {"COMMAND & ENERGY": body}
+        # THREAT ASSESSMENT (from the retired Bridge tab's contacts block):
+        # what THIS ship can do to its enemies - so clicking an enemy in the
+        # ship list gives the capability readout the contacts list used to.
+        try:
+            st2 = self.state or {}
+            foes2 = [z for z in st2.get("ships", [])
+                     if (z.get("race") or "").upper() != (s.get("race") or "").upper()]
+            import sfb_log
+            _lg = sfb_log.restrict_to_ships(
+                sfb_log.parse(), [z["label"] for z in st2.get("ships", [])])
+            assess = cmd.threat_assessment(s, foes2, st2, _lg,
+                                           st2.get("turn", 1),
+                                           st2.get("impulse", 1))
+            if assess:
+                buckets.setdefault("COMMAND & ENERGY", []).extend(
+                    ["    ASSESS: " + a for a in assess])
+        except Exception:
+            pass
         for name, pane in self.adv_panes.items():
-            content = buckets.get(name) or ["(nothing this impulse)"]
+            content = buckets.get(name)
+            content = self._sort_quadrant(content) if content else \
+                ["(nothing this impulse)"]
             pane.set_lines(content, self.ai)
 
         # --- EAF for the SELECTED ship (either side). Two parts:
@@ -1656,6 +1496,36 @@ class Bridge(tk.Tk):
 
     QUADRANTS = ("MOVEMENT", "WEAPONS", "DEFENCE", "COMMAND & ENERGY")
 
+    @staticmethod
+    def _sort_quadrant(lines):
+        """Highlighted commands first: active act-now band (>>> doing something)
+        on top, passive band (>>> HOLD / cannot) next, bold station orders
+        after, everything else last. Rationale lines travel with their order."""
+        groups, cur = [], []
+        for ln in lines:
+            if ln.startswith("          ") and cur:
+                cur.append(ln)
+                continue
+            if cur:
+                groups.append(cur)
+            cur = [ln]
+        if cur:
+            groups.append(cur)
+
+        def key(g):
+            s = g[0].strip()
+            if s.startswith(">>>"):
+                up = s.upper()
+                passive = any(k in up for k in ("HOLD", "DO NOT", "NO LAUNCH",
+                                                "RELOADING", "CANNOT"))
+                return 1 if passive else 0
+            if s.startswith(("FIRE", "GUNNERY", "MOVE", "HELM", "DEFENCE",
+                             "SCIENCE", "ENGINEERING", "SHUTTLE BAY")):
+                return 2
+            return 3
+        groups.sort(key=key)
+        return [l for g in groups for l in g]
+
     def _make_quadrants(self, parent, head_height=4):
         """The shared advice layout: a short header pane over a 2x2 grid of
         titled section panes. One builder so Tactical and both Flag tabs are
@@ -1714,6 +1584,30 @@ class Bridge(tk.Tk):
             out.append(f"    {ship}: {body}")
         return out
 
+    def _phase_line(self):
+        """ENERGY ALLOCATION vs impulse phase, from the client's own log events
+        (was the Bridge tab's unique EA detection - a turn is DECIDED at EA)."""
+        st = self.state
+        imp = st.get("impulse", 1) if st else 1
+        ea, waiting = imp <= 0, []
+        try:
+            import sfb_log
+            log = sfb_log.restrict_to_ships(
+                sfb_log.parse(), [s["label"] for s in st.get("ships", [])])
+            pending = set()
+            for e in (log.get("events") or []):
+                if e.get("kind") == "ea":
+                    (pending.add if e.get("what") == "started"
+                     else pending.discard)(e["ship"])
+            if pending:
+                ea, waiting = True, sorted(pending)
+        except Exception:
+            pass
+        if ea:
+            return ("PHASE: ENERGY ALLOCATION - set power for the whole turn now"
+                    + (f"  (allocating: {', '.join(waiting)})" if waiting else ""))
+        return f"PHASE: IMPULSE {imp} of 32 - act as the impulse unfolds"
+
     def _render_flagship(self):
         """One Flag tab per side, quadrant layout: fleet-wide headlines only
         (ship-prefixed, rationale stays on the ship's Tactical tab), sorted
@@ -1723,10 +1617,21 @@ class Bridge(tk.Tk):
             return
         clock = self.lines[0] if (self.lines
                                   and self.lines[0].startswith("===")) else ""
+        phase = self._phase_line()
         for side_name, (head, panes) in self.flag_panes.items():
             role = "ORDERS" if side_name.upper() == self.ai.upper() else "ADVICE"
-            head.set_lines([clock or "=== waiting ===",
-                            f"--- {side_name} FLEET {role} ---"], self.ai)
+            mine = [s for s in st.get("ships", [])
+                    if (s.get("race") or "").upper() == side_name.upper()]
+            flag = None
+            try:
+                flag = cmd.flagship(mine)
+            except Exception:
+                pass
+            head.set_lines(
+                [clock or "=== waiting ===",
+                 f"--- {side_name} FLEET {role}"
+                 + (f'  (flagship {flag["label"]})' if flag else "") + " ---",
+                 phase], self.ai)
             headlines = self._side_headlines(side_name)
             try:
                 import sfb_condense as CD
@@ -1752,6 +1657,18 @@ class Bridge(tk.Tk):
                         best[ship2] = (sc, ln)
                 content = [ln for _, ln in
                            sorted(best.values(), key=lambda x: -x[0])]
+                # FLEET PLAN (from the retired Bridge tab) leads the command
+                # quadrant: one intent for the whole squadron.
+                if name == "COMMAND & ENERGY":
+                    try:
+                        foes = [s for s in st.get("ships", [])
+                                if (s.get("race") or "").upper() != side_name.upper()]
+                        plan = cmd.fleet_plan(side_name, mine, foes, st, None,
+                                              st.get("turn", 1),
+                                              st.get("impulse", 1))
+                    except Exception:
+                        plan = []
+                    content = [f"    PLAN: {p}" for p in plan] + content
                 pane.set_lines(content or ["(nothing vital)"], self.ai)
 
     def _render_referee(self):
@@ -1919,7 +1836,6 @@ class Bridge(tk.Tk):
                 self.refresh()
             else:
                 # voice results arrive asynchronously - repaint when they land
-                self._render_bridge()
                 self._render_ship()
                 self._render_comms()
                 self.vstatus.configure(text=self.voice.status)
