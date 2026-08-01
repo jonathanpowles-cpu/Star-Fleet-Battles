@@ -178,6 +178,49 @@ def crewify(lines):
     return out
 
 
+# ------------------------------------------------------------------ buckets
+# Section -> the markers that put a HEADLINE there. Rationale/refs lines follow
+# whatever headline they sit under, so an order and its reasoning never split.
+_BUCKETS = (
+    ("MOVEMENT", ("MOVE:", "HELM", "MANEUVER", "TAC ", "HET", "ERRATIC",
+                  "STRAIGHT", "SIDESLIP", "TURN ", "no movement")),
+    ("WEAPONS", ("FIRE", "GUNNERY", "HUNT", "DISRUPTOR", "PHASER", "capacitor",
+                 "CAPACITOR", "LAUNCH", "DRONE", "drones", "OVERLOAD",
+                 "use-or-lose", "FIRE THIS TURN")),
+    ("DEFENCE", ("SHIELD", "REINFORCE", "SEEKERS", "SCREEN", "ESG", "WEASEL",
+                 "SHUTTLE", "SCATTER", "SUICIDE", "suicide", "ADD ", "DEFENCE",
+                 "SCIENCE", "EW ")),
+    ("COMMAND & ENERGY", ("MISSION", "POSTURE", "DOCTRINE", "TRADE", "EAF",
+                          "BATTERY", "battery", "OUTCOME", "DISENGAGE")),
+)
+
+
+def bucket_orders(lines):
+    """Split one ship's order lines into sections for a quadrant layout.
+
+    Returns {section: [lines]} (sections in _BUCKETS order, always present).
+    A headline is filed by its first matching marker; its indented rationale
+    and refs lines travel with it. The '>>> IMPULSE n' band is classified by
+    CONTENT (a launch order is WEAPONS even though it is an impulse action).
+    Unmatched headlines land in COMMAND & ENERGY rather than vanishing.
+    """
+    out = {name: [] for name, _ in _BUCKETS}
+    current = "COMMAND & ENERGY"
+    for ln in lines:
+        s = ln.strip()
+        deep = ln.startswith("          ")          # rationale/refs
+        if not deep and s:
+            probe = s[4:] if s.startswith(">>> ") else s
+            placed = None
+            for name, keys in _BUCKETS:
+                if any(k in probe for k in keys):
+                    placed = name
+                    break
+            current = placed or "COMMAND & ENERGY"
+        out[current].append(ln)
+    return out
+
+
 def _selftest():
     sample = [
         "    >>> DISRUPTORS: HOLD until range 8",

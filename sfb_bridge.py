@@ -917,11 +917,16 @@ class Bridge(tk.Tk):
 
         # --- BOARD
         self.board = BoardView(self.nb, self)
-        # --- FLAGSHIP: the glance view - the ~7 decisions that matter now.
-        ff = tk.Frame(self.nb, bg=BG)
-        self.flag_txt = TextPane(ff)
-        self.flag_txt.pack(fill="both", expand=True)
-        self.nb.add(ff, text="Flagship")
+        # --- FLAGSHIP: the glance view, ONE TAB PER SIDE - orders and advice
+        # never share a screen.
+        ffa = tk.Frame(self.nb, bg=BG)
+        self.flag_txt_ai = TextPane(ffa)
+        self.flag_txt_ai.pack(fill="both", expand=True)
+        self.nb.add(ffa, text=f"Flag: {ai}")
+        ffb = tk.Frame(self.nb, bg=BG)
+        self.flag_txt_adv = TextPane(ffb)
+        self.flag_txt_adv.pack(fill="both", expand=True)
+        self.nb.add(ffb, text=f"Flag: {advise}")
 
         self.nb.add(self.board, text="Board")
 
@@ -957,7 +962,30 @@ class Bridge(tk.Tk):
         self.ship_list.bind("<<ListboxSelect>>", self._on_pick)
         self.ship_nb = ttk.Notebook(sf)
         self.ship_nb.pack(side="left", fill="both", expand=True)
-        self.tab_adv, self.adv_txt = self._sub_tab("Tactical")
+        # Tactical: a short status header + a QUADRANT grid, one section per
+        # kind of advice (movement / weapons / defence / command & energy).
+        # Four short panes instead of one scroll of death; each cell scrolls
+        # independently if its content ever runs long.
+        tf = tk.Frame(self.ship_nb, bg=BG)
+        self.adv_head = TextPane(tf, height=4)
+        self.adv_head.pack(side="top", fill="x")
+        qgrid = tk.Frame(tf, bg=BG)
+        qgrid.pack(fill="both", expand=True)
+        self.adv_panes = {}
+        for i, name in enumerate(("MOVEMENT", "WEAPONS",
+                                  "DEFENCE", "COMMAND & ENERGY")):
+            cell = tk.Frame(qgrid, bg=BG, highlightbackground=GRID,
+                            highlightthickness=1)
+            cell.grid(row=i // 2, column=i % 2, sticky="nsew", padx=2, pady=2)
+            tk.Label(cell, text=" " + name, bg=PANEL, fg=ACCENT, anchor="w",
+                     font=("Consolas", 9, "bold")).pack(fill="x")
+            p = TextPane(cell)
+            p.pack(fill="both", expand=True)
+            self.adv_panes[name] = p
+        qgrid.rowconfigure((0, 1), weight=1)
+        qgrid.columnconfigure((0, 1), weight=1)
+        self.ship_nb.add(tf, text="Tactical")
+        self.tab_adv = tf
         # EAF as a real TABLE: rows = allocation categories, columns = turns,
         # with the engine's advice for the next turn as the last column. The
         # advised free-text (reasoning) sits in a small pane below the grid.
@@ -1400,13 +1428,17 @@ class Bridge(tk.Tk):
         rng = cmd.disruptor_max_range(s)
         if rng:
             head.append(f'disruptor max range {rng} (Annex #8A)')
+        self.adv_head.set_lines(head, self.ai)
         body = lines or ["(no orders for this ship)"]
         try:
             import sfb_condense as CD
             body = CD.crewify(body)
+            buckets = CD.bucket_orders(body)
         except Exception:
-            pass
-        self.adv_txt.set_lines(head + [""] + body, self.ai)
+            buckets = {"COMMAND & ENERGY": body}
+        for name, pane in self.adv_panes.items():
+            content = buckets.get(name) or ["(nothing this impulse)"]
+            pane.set_lines(content, self.ai)
 
         # --- EAF for the SELECTED ship (either side). Two parts:
         #   (1) the ACTUAL per-turn allocation read straight from the client's EAF
@@ -1639,29 +1671,32 @@ class Bridge(tk.Tk):
             win.lift()
 
     def _render_flagship(self):
-        """The glance view: turn clock + the ranked handful of decisions that
-        matter this impulse, one line each, drawn from the same order lines the
-        ship tabs show in full."""
+        """The glance view, one tab per side: turn clock + the ranked handful
+        of decisions that matter this impulse, drawn from the same order lines
+        the ship tabs show in full."""
         st = self.state
         if not st:
             return
-        out = []
-        if self.lines and self.lines[0].startswith("==="):
-            out.append(self.lines[0])
-        out.append("")
         try:
-            top = cmd.flagship_summary(self.lines)
+            top = cmd.flagship_summary(self.lines, limit=12)
         except Exception:
             top = []
-        if not top:
-            out.append("(no pressing decisions - closing/manoeuvre phase)")
-        else:
-            out.append("--- PRIORITY DECISIONS ---")
-            for side, ship, txt in top:
-                tag = "[ORDER]" if side.upper() == self.ai.upper() else "[advise]"
-                out.append(f"{tag} {ship}: {txt}")
-        out += ["", "(full rationale per ship on the Ships tab)"]
-        self.flag_txt.set_lines(out, self.ai)
+        clock = self.lines[0] if (self.lines
+                                  and self.lines[0].startswith("===")) else ""
+        for side_name, pane, role in ((self.ai, self.flag_txt_ai, "[ORDER]"),
+                                      (self.advise, self.flag_txt_adv, "[advise]")):
+            mine = [(sh, txt) for sd, sh, txt in top
+                    if sd and sd.upper() == side_name.upper()][:7]
+            out = [clock, ""] if clock else []
+            if not mine:
+                out.append(f"(no pressing {side_name} decisions - "
+                           f"closing/manoeuvre phase)")
+            else:
+                out.append(f"--- {side_name} PRIORITY DECISIONS ---")
+                for sh, txt in mine:
+                    out.append(f"{role} {sh}: {txt}")
+            out += ["", "(full rationale per ship on the Ships tab)"]
+            pane.set_lines(out, self.ai)
 
     def _render_referee(self):
         """Phase-1 shadow referee: advance the shadow by dead reckoning from the

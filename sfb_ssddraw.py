@@ -35,6 +35,7 @@ _OUTLINE = "#30363d"
 _TEXT = "#c9d1d9"
 
 _NAMES = None
+_ABBREV = None
 
 
 def _kind_name(kind):
@@ -47,6 +48,29 @@ def _kind_name(kind):
         except Exception:
             _NAMES = {}
     return _NAMES.get(kind, f"kind {kind}")
+
+
+def _abbrev(kind):
+    """The client's OWN short label for a box kind (abbrev_boxtypes.names) -
+    'Disr', 'Ph-1', 'Batt', 'L Warp'. Falls back to the full name."""
+    global _ABBREV
+    if _ABBREV is None:
+        import os
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "client_data", "abbrev_boxtypes.names")
+        _ABBREV = {}
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                for ln in f:
+                    if "=" in ln:
+                        nm, _, num = ln.strip().rpartition("=")
+                        try:
+                            _ABBREV[int(num)] = nm
+                        except ValueError:
+                            pass
+        except OSError:
+            pass
+    return _ABBREV.get(kind) or _kind_name(kind)
 
 
 def draw(canvas, boxes, width, height, title=""):
@@ -103,17 +127,31 @@ def draw(canvas, boxes, width, height, title=""):
             canvas.create_rectangle(cx0, cy0, cx1, cy1,
                                     fill=_DESTROYED if dead else colour,
                                     outline=_OUTLINE)
-        # group label: shield number for shields, kind name otherwise; only
-        # where the group is big enough to carry text.
-        if gw > 34 or gh > 34:
-            kind = b.get("kind")
-            lbl = (f"#{b.get('des')}" if kind == _SHIELD_KIND and b.get("des")
-                   else _kind_name(kind))
-            if gw >= gh:
-                canvas.create_text(gx + gw / 2, gy + gh / 2, text=lbl,
-                                   fill="#0d1117" if kind in _COLOURS else _TEXT,
-                                   font=("Consolas", 7, "bold"))
-            else:
-                canvas.create_text(gx + gw / 2, gy - 7, text=lbl, fill=_TEXT,
-                                   font=("Consolas", 7))
+        # EVERY group gets a label (the client's own abbreviation - 'Disr',
+        # 'Ph-1', 'Batt' - plus the mount designation where one exists).
+        # Inside the strip when it fits, otherwise just outside it: above a
+        # horizontal strip, to the left of a vertical one - so small mounts
+        # stay identifiable without cluttering the cells themselves.
+        kind = b.get("kind")
+        des = str(b.get("des") or "").strip()
+        if kind == _SHIELD_KIND and des:
+            lbl = f"#{des}"
+        else:
+            lbl = _abbrev(kind)
+            # a single mount letter/number is a designation worth showing;
+            # multi-value strings (damage-control repair tracks etc.) are data,
+            # not a name - they'd bloat the label into noise.
+            if des and des != lbl and len(des) <= 3:
+                lbl = f"{lbl} {des}"
+        fits_inside = gw > 8 * len(lbl) and gh > 11
+        if fits_inside:
+            canvas.create_text(gx + gw / 2, gy + gh / 2, text=lbl,
+                               fill="#0d1117" if kind in _COLOURS else _TEXT,
+                               font=("Consolas", 7, "bold"))
+        elif horizontal:
+            canvas.create_text(gx, gy - 6, text=lbl, fill=_TEXT,
+                               anchor="w", font=("Consolas", 6))
+        else:
+            canvas.create_text(gx - 3, gy + gh / 2, text=lbl, fill=_TEXT,
+                               anchor="e", font=("Consolas", 6))
     return destroyed
