@@ -114,6 +114,70 @@ def condense(lines, max_reasons=NORMAL):
     return out
 
 
+# ---------------------------------------------------------------- crew voice
+# Category-prefix -> bridge station. Orders read as commands to a station, the
+# way a captain would give them; the category survives in parentheses only
+# where it disambiguates. Order matters: first match wins.
+_STATIONS = (
+    ("MOVE:", "HELM:"),
+    ("MANEUVER", "HELM (maneuver):"),
+    ("FIRE:", "GUNNERY:"),
+    ("HUNT:", "GUNNERY - HUNT:"),
+    ("DISRUPTORS:", "GUNNERY (disruptors):"),
+    ("CAPACITOR", "GUNNERY (capacitor):"),
+    ("SEEKERS", "DEFENCE (seekers):"),
+    ("SCREEN:", "DEFENCE (screen):"),
+    ("SHIELDS", "DEFENCE (shields):"),
+    ("SHIELD:", "DEFENCE (shields):"),
+    ("REINFORCE", "DEFENCE (reinforce):"),
+    ("EW ", "SCIENCE (EW):"),
+    ("EW:", "SCIENCE (EW):"),
+    ("WILD WEASEL", "SHUTTLE BAY (weasel):"),
+    ("WEASEL", "SHUTTLE BAY (weasel):"),
+    ("ARM SUICIDE", "SHUTTLE BAY: ARM SUICIDE"),
+    ("NO suicide", "SHUTTLE BAY: NO suicide"),
+    ("SCATTER-PACK", "SHUTTLE BAY: SCATTER-PACK"),
+)
+
+# A rule citation: (G23.31), (FD1.51), (C4.32), (J4.814)... 1-2 letters then
+# digits, dots and an optional trailing letter, inside parens.
+_RE_CITE = re.compile(r"\s*\(([A-Z]{1,2}\d[\w.]*)\)")
+
+
+def crewify(lines):
+    """Render-side pass: station-voice order lines + citations demoted.
+
+    Rule citations are stripped from HEADLINE order lines and re-issued on a
+    dimmed 'refs:' line underneath (the render layer indents 10 spaces = dim).
+    Rationale lines are already dim and keep their citations in place - the
+    provenance is always available, it just stops shouting. Pure presentation:
+    the engine's own lines (and the Flagship scorer) are untouched.
+    """
+    out = []
+    for ln in lines:
+        s = ln.lstrip()
+        indent = ln[:len(ln) - len(s)]
+        is_headline = ln.startswith("    ") and not ln.startswith("          ") \
+            and not s.startswith(">>>")
+        if is_headline:
+            for pre, station in _STATIONS:
+                if s.startswith(pre):
+                    if station.endswith(":"):
+                        rest = s[len(pre):].lstrip(" :")
+                        s = station + " " + rest
+                    else:
+                        s = station + s[len(pre):]
+                    break
+            cites = _RE_CITE.findall(s)
+            if cites:
+                s = _RE_CITE.sub("", s).replace("  ", " ").rstrip()
+                out.append(indent + s)
+                out.append("          refs: " + ", ".join(dict.fromkeys(cites)))
+                continue
+        out.append(indent + s if is_headline else ln)
+    return out
+
+
 def _selftest():
     sample = [
         "    >>> DISRUPTORS: HOLD until range 8",

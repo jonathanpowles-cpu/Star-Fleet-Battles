@@ -824,10 +824,16 @@ class TextPane(scrolledtext.ScrolledText):
             self.insert("end", ln + "\n", "cyc")
         elif s.startswith("EAF"):
             self.insert("end", ln + "\n", "eaf")
-        elif s.startswith("FIRE"):
+        elif s.startswith("FIRE") or s.startswith("GUNNERY"):
             self._warnsplit(ln, "fire")
-        elif s.startswith("MOVE"):
+        elif s.startswith("MOVE") or s.startswith("HELM"):
             self._warnsplit(ln, "move")
+        elif s.startswith("DEFENCE"):
+            self._warnsplit(ln, "seek")
+        elif s.startswith("SCIENCE"):
+            self.insert("end", ln + "\n", "eaf")
+        elif s.startswith("SHUTTLE BAY"):
+            self.insert("end", ln + "\n", "cyc")
         elif ln.startswith("[ORDER]"):
             self._warnsplit("• " + ln.split("]", 1)[1].strip(), "sideA")
         elif ln.startswith("[advise]"):
@@ -969,7 +975,17 @@ class Bridge(tk.Tk):
         self.eaf_txt.pack(fill="x", padx=0, pady=(4, 0))
         self.ship_nb.add(ef, text="EAF")
         self.tab_eaf = ef
-        self.tab_ssd, self.ssd_txt = self._sub_tab("SSD")
+        # SSD: the scanned sheet when we have one for the hull, live damage
+        # banner above it, and the text SSD (always present) below.
+        sf2 = tk.Frame(self.ship_nb, bg=BG)
+        self.ssd_banner = tk.Label(sf2, bg=BG, fg=ORANGE, justify="left",
+                                   anchor="w", font=("Consolas", 10, "bold"))
+        self.ssd_img_label = tk.Label(sf2, bg=BG)
+        self.ssd_txt = TextPane(sf2)
+        self.ssd_txt.pack(side="bottom", fill="both", expand=True)
+        self.ship_nb.add(sf2, text="SSD")
+        self.tab_ssd = sf2
+        self._ssd_photo = None          # keep a reference or Tk drops the image
         self.tab_crew, self.crew_txt = self._sub_tab("Bridge crew")
         self.nb.add(sf, text="Ships")
 
@@ -1114,6 +1130,10 @@ class Bridge(tk.Tk):
         self._fill_ship_list()
         self.board.redraw()
         self._render_flagship()
+        try:
+            self._update_alerts()
+        except Exception:
+            pass
         self._render_bridge()
         self._render_ship()
         self._render_comms()
@@ -1346,6 +1366,11 @@ class Bridge(tk.Tk):
                 out.append(f"    (assessment unavailable: {e})")
             out.append("")
 
+        try:
+            import sfb_condense as CD
+            out = CD.crewify(out)
+        except Exception:
+            pass
         self.bridge_txt.set_lines(out, self.ai)
 
     def _render_ship(self):
@@ -1376,7 +1401,13 @@ class Bridge(tk.Tk):
         rng = cmd.disruptor_max_range(s)
         if rng:
             head.append(f'disruptor max range {rng} (Annex #8A)')
-        self.adv_txt.set_lines(head + [""] + (lines or ["(no orders for this ship)"]), self.ai)
+        body = lines or ["(no orders for this ship)"]
+        try:
+            import sfb_condense as CD
+            body = CD.crewify(body)
+        except Exception:
+            pass
+        self.adv_txt.set_lines(head + [""] + body, self.ai)
 
         # --- EAF for the SELECTED ship (either side). Two parts:
         #   (1) the ACTUAL per-turn allocation read straight from the client's EAF
@@ -1493,6 +1524,39 @@ class Bridge(tk.Tk):
             ssd.append(_line(sysname, cur, mx))
         self.ssd_txt.set_lines(ssd, self.ai)
 
+        # Scanned SSD sheet, when the hull has one. Damage rides above it as a
+        # banner (box-level overlay needs per-scan coordinates - see
+        # sfb_ssdimg); the text SSD below stays authoritative.
+        try:
+            import sfb_ssdimg as SIMG
+            path = SIMG.ssd_image_path(s)
+        except Exception:
+            path = None
+        if path and path != getattr(self, "_ssd_img_path", None):
+            try:
+                from PIL import Image, ImageTk
+                im = Image.open(path)
+                im.thumbnail((760, 520))
+                self._ssd_photo = ImageTk.PhotoImage(im)
+                self._ssd_img_path = path
+            except Exception:
+                path = None
+        if path:
+            banner = []
+            try:
+                banner = SIMG.damage_banner(s)
+            except Exception:
+                pass
+            self.ssd_banner.configure(text="\n".join(banner) if banner
+                                      else "no damage recorded")
+            self.ssd_banner.pack(side="top", fill="x", padx=10, pady=(6, 0))
+            self.ssd_img_label.configure(image=self._ssd_photo)
+            self.ssd_img_label.pack(side="top", pady=4)
+        else:
+            self._ssd_img_path = None
+            self.ssd_banner.pack_forget()
+            self.ssd_img_label.pack_forget()
+
         # --- Bridge crew (LLM, per ship)
         st = self.state
         sc = V.Scene(side=s["race"], role="orders" if s["race"].upper() == self.ai.upper()
@@ -1523,6 +1587,73 @@ class Bridge(tk.Tk):
             out += ["~ " + v for v in voiced] if voiced else ["(opening channel...)"]
             out.append("")
         self.comms_txt.set_lines(out, self.ai)
+
+    # ------------------------------------------------------- key-comms alerts
+    ALERT_SCORE = 70        # flagship score at/above which a line is CRITICAL
+
+    def _update_alerts(self):
+        """Separate always-on-top window for KEY communications only.
+
+        Shows nothing until something critical exists (deadline, internals,
+        HUNT window, ESG release); pops once per NEW item (deduped), never
+        steals focus, and closes with one click. The main window stays calm -
+        urgency lives here.
+        """
+        try:
+            top = [x for x in cmd.flagship_summary(self.lines, limit=10)]
+        except Exception:
+            top = []
+        crit = []
+        for side, ship, txt in top:
+            score = 0
+            for sc, keys in cmd._FLAG_SCORES:
+                if any(k in txt for k in keys):
+                    score = sc
+                    break
+            if score >= self.ALERT_SCORE:
+                crit.append((side, ship, txt))
+        # combat feed criticals: damage taken / destroyed this turn
+        for ln in self.lines:
+            if ln.startswith("* ") and ("took" in ln or "destroyed" in ln.lower()):
+                crit.append(("COMBAT", "", ln[2:]))
+
+        if not hasattr(self, "_alert_seen"):
+            self._alert_seen = set()
+        keys = {(s, sh, t[:60]) for s, sh, t in crit}
+        fresh = keys - self._alert_seen
+        self._alert_seen |= keys
+
+        if not crit:
+            if getattr(self, "_alert_win", None) and self._alert_win.winfo_exists():
+                self._alert_win.destroy()
+            return
+        win = getattr(self, "_alert_win", None)
+        if not (win and win.winfo_exists()):
+            if not fresh:
+                return              # dismissed and nothing new - stay closed
+            win = tk.Toplevel(self)
+            win.title("PRIORITY SIGNALS")
+            win.configure(bg="#1a1214")
+            win.attributes("-topmost", True)
+            win.geometry(f"+{self.winfo_x() + self.winfo_width() - 560}"
+                         f"+{self.winfo_y() + 60}")
+            self._alert_win = win
+            self._alert_txt = TextPane(win, height=12, width=64)
+            self._alert_txt.pack(fill="both", expand=True)
+            bar = tk.Frame(win, bg="#1a1214")
+            bar.pack(fill="x")
+            tk.Button(bar, text="Acknowledged", command=win.destroy,
+                      bg="#2a2f36", fg=FG, borderwidth=0,
+                      font=("Consolas", 9)).pack(side="right", padx=8, pady=5)
+        out = ["=== PRIORITY SIGNALS ==="]
+        for side, ship, txt in crit:
+            tag = "[ORDER]" if side.upper() == self.ai.upper() else "[advise]"
+            out.append(f"{tag} {ship + ': ' if ship else ''}{txt}"
+                       if side != "COMBAT" else f"* {txt}")
+        self._alert_txt.set_lines(out, self.ai)
+        if fresh:
+            win.deiconify()
+            win.lift()
 
     def _render_flagship(self):
         """The glance view: turn clock + the ranked handful of decisions that
