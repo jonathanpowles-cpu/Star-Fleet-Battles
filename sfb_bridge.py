@@ -1992,6 +1992,23 @@ def ensure_single_instance():
         time.sleep(0.15)
         if acquire_single_instance():
             return True
+    # A silent False here looks like "the bridge is not launching" - say WHY,
+    # both to the log and on screen (this exact symptom cost a debugging
+    # session: a python.exe-launched test bridge held the lock, the takeover
+    # only kills verified pythonw, and main() returned without a word).
+    msg = ("Another bridge is holding the single-instance lock and could not "
+           "be taken over (it may be running as python.exe rather than "
+           "pythonw.exe - e.g. a console/test launch). Close it, or kill "
+           "python processes in Task Manager, then relaunch.")
+    print(msg, file=sys.stderr)
+    try:
+        r = tk.Tk()
+        r.withdraw()
+        from tkinter import messagebox
+        messagebox.showerror("SFB Bridge - cannot start", msg)
+        r.destroy()
+    except Exception:
+        pass
     return False
 
 
