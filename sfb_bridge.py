@@ -643,6 +643,44 @@ class BoardView(tk.Frame):
                           cy + math.sin(ang) * size * 1.05,
                           fill=colr, width=2)
 
+            # ADVISED MOVE as an arrow: the engine's order, drawn where it acts.
+            # Destination comes from the same kinematic model the referee uses
+            # (SHADOW.apply_move), so the arrow IS the order, not a repaint.
+            mv = s.get("advised_move")
+            if mv and mv != "HOLD":
+                try:
+                    probe = {"x": s["x"], "y": s["y"],
+                             "facing": int(s.get("facing", 0) or 0)}
+                    SHADOW.apply_move(probe, mv)
+                    dx, dy = hex_center(probe["x"], probe["y"], size, ox, oy)
+                    c.create_line(cx, cy, dx, dy, fill=GOLD, width=3,
+                                  arrow="last", arrowshape=(12, 14, 5),
+                                  dash=(6, 3))
+                    c.create_text((cx + dx) / 2 + 8, (cy + dy) / 2 - 8,
+                                  text=mv.replace("_", " ").lower(),
+                                  fill=GOLD, font=("Consolas", 7, "italic"),
+                                  anchor="w")
+                except Exception:
+                    pass
+            elif mv == "HOLD":
+                c.create_oval(cx - size * 0.95, cy - size * 0.95,
+                              cx + size * 0.95, cy + size * 0.95,
+                              outline=GOLD, dash=(3, 4), width=2)
+
+            # HUNT order: a thin red dashed line to the target whose down shield
+            # this ship is manoeuvring to open (the hole itself is the red arc
+            # already drawn on the target's shield ring).
+            hunt = s.get("hunt")
+            if hunt:
+                tgt2 = next((z for z in ships if z["label"] == hunt[0]), None)
+                if tgt2:
+                    tx2, ty2 = hex_center(tgt2["x"], tgt2["y"], size, ox, oy)
+                    c.create_line(cx, cy, tx2, ty2, fill=RED, width=1,
+                                  dash=(2, 5))
+                    c.create_text((cx + tx2) / 2, (cy + ty2) / 2 + 10,
+                                  text=f"hunt #{hunt[1] + 1}", fill=RED,
+                                  font=("Consolas", 7, "italic"))
+
             # forward firing arc wedge
             if self.show["arcs"].get() and selected:
                 fa = facing_angle(s.get("facing", 0))
@@ -873,6 +911,12 @@ class Bridge(tk.Tk):
 
         # --- BOARD
         self.board = BoardView(self.nb, self)
+        # --- FLAGSHIP: the glance view - the ~7 decisions that matter now.
+        ff = tk.Frame(self.nb, bg=BG)
+        self.flag_txt = TextPane(ff)
+        self.flag_txt.pack(fill="both", expand=True)
+        self.nb.add(ff, text="Flagship")
+
         self.nb.add(self.board, text="Board")
 
         # --- BRIDGE (with a side toggle: whose bridge are we standing on?)
@@ -908,7 +952,23 @@ class Bridge(tk.Tk):
         self.ship_nb = ttk.Notebook(sf)
         self.ship_nb.pack(side="left", fill="both", expand=True)
         self.tab_adv, self.adv_txt = self._sub_tab("Tactical")
-        self.tab_eaf, self.eaf_txt = self._sub_tab("EAF")
+        # EAF as a real TABLE: rows = allocation categories, columns = turns,
+        # with the engine's advice for the next turn as the last column. The
+        # advised free-text (reasoning) sits in a small pane below the grid.
+        ef = tk.Frame(self.ship_nb, bg=BG)
+        style = ttk.Style(self)
+        style.configure("EAF.Treeview", background=PANEL, fieldbackground=PANEL,
+                        foreground=FG, rowheight=22, font=("Consolas", 10))
+        style.configure("EAF.Treeview.Heading", background=BG, foreground=ACCENT,
+                        font=("Consolas", 10, "bold"))
+        self.eaf_tree = ttk.Treeview(ef, show="headings", style="EAF.Treeview")
+        self.eaf_tree.pack(fill="both", expand=True, padx=6, pady=(6, 0))
+        self.eaf_tree.tag_configure("total", background="#243447",
+                                    font=("Consolas", 10, "bold"))
+        self.eaf_txt = TextPane(ef, height=9)
+        self.eaf_txt.pack(fill="x", padx=0, pady=(4, 0))
+        self.ship_nb.add(ef, text="EAF")
+        self.tab_eaf = ef
         self.tab_ssd, self.ssd_txt = self._sub_tab("SSD")
         self.tab_crew, self.crew_txt = self._sub_tab("Bridge crew")
         self.nb.add(sf, text="Ships")
@@ -994,8 +1054,40 @@ class Bridge(tk.Tk):
     def refresh(self, force=False):
         rl = reload_if_changed()
         st = self._read_state()
-        if st is None:
-            self.status.configure(text="no readable battle autosave yet")
+        if st is None or not st.get("ships"):
+            # The client holds the save open mid-game, so the autosave reads as
+            # a stub. The combat LOG still tracks every position and facing
+            # (validated 81/81 by the replay harness) - show those rather than
+            # going blind.
+            self.status.configure(text="save locked by client - showing "
+                                       "log-tracked positions")
+            try:
+                import sfb_log
+                import sfb_replay as REPLAY
+                clog = sfb_log.parse()
+                res = REPLAY.replay(clog)
+                out = [f"=== LOG-TRACKED PICTURE (turn {clog['turn']}, "
+                       f"impulse {clog['impulse']}) ===",
+                       "save is client-locked; positions below come from the "
+                       "combat log via the replay harness (exact).", ""]
+                for lab in sorted(res["ships"]):
+                    r = res["ships"][lab]
+                    if r["x"] is None:
+                        continue
+                    f = r["facing"]
+                    out.append(f"  {lab}: hex ({r['x']},{r['y']})  facing "
+                               f"{'ABCDEF'[f] if f is not None else '?'}")
+                sh = clog.get("shields") or {}
+                if sh:
+                    out.append("")
+                    out.append("last logged shields:")
+                    for lab, v in sh.items():
+                        holes = [f"#{i+1}" for i, x in enumerate(v) if x == 0]
+                        out.append(f"  {lab}: {v}"
+                                   + (f"   DOWN: {', '.join(holes)}" if holes else ""))
+                self.bridge_txt.set_lines(out, self.ai)
+            except Exception:
+                pass
             return
         self.state_obj = st
         try:
@@ -1021,6 +1113,7 @@ class Bridge(tk.Tk):
 
         self._fill_ship_list()
         self.board.redraw()
+        self._render_flagship()
         self._render_bridge()
         self._render_ship()
         self._render_comms()
@@ -1291,27 +1384,41 @@ class Bridge(tk.Tk):
         #   (2) the engine's advice for the upcoming allocation.
         p = s.get("power") or {}
         role = "ORDER" if s["race"].upper() == self.ai.upper() else "ADVICE"
-        eaf = [f'=== {s["label"]} ENERGY ({role}) ===',
-               f'available {p.get("total",0)}  (warp {p.get("warp",0)} '
-               f'imp {p.get("impulse",0)} APR {p.get("apr",0)} '
-               f'AWR {p.get("awr",0)} batt {p.get("battery",0)})', ""]
 
-        # (1) ACTUAL allocation, per turn, from the client.
-        actual = s.get("eaf") or []
-        if actual:
-            eaf.append("ACTUAL ALLOCATION (from the client EAF):")
-            for ti, row in enumerate(actual):
-                items = {k: v for k, v in row.items()
-                         if not k.startswith(("Total Power", "Reserve Power Avail",
-                                              "End ", "Speed Plot"))}
-                if not items:
+        # (1) ACTUAL allocation as a GRID: one row per category, one column per
+        # turn, straight from the client EAF.
+        actual = [t for t in (s.get("eaf") or [])]
+        cats, seen = [], set()
+        for row in actual:
+            for k in row:
+                if k.startswith(("Total Power", "Reserve Power Avail",
+                                 "End ", "Speed Plot", "Notes")):
                     continue
-                eaf.append(f'  -- turn {ti + 1} --')
-                for k, v in items.items():
-                    eaf.append(f'     {k:<26} {v}')
-            eaf.append("")
+                if k not in seen:
+                    seen.add(k)
+                    cats.append(k)
+        cols = ["cat"] + [f"t{i + 1}" for i in range(len(actual))]
+        tree = self.eaf_tree
+        tree.delete(*tree.get_children())
+        tree.configure(columns=cols)
+        tree.heading("cat", text=f"{s['label']}  (avail {p.get('total', 0)})")
+        tree.column("cat", width=210, anchor="w")
+        for i in range(len(actual)):
+            tree.heading(f"t{i + 1}", text=f"Turn {i + 1}")
+            tree.column(f"t{i + 1}", width=70, anchor="e")
+        for k in cats:
+            vals = [k]
+            for row in actual:
+                v = row.get(k, "")
+                vals.append(f"{v:g}" if isinstance(v, (int, float)) else str(v))
+            tag = ("total",) if "Power" in k or k.startswith("Warp") else ()
+            tree.insert("", "end", values=vals, tags=tag)
+        if not cats:
+            tree.configure(columns=("cat",))
+            tree.heading("cat", text=f"{s['label']} - no EAF entered yet")
+            tree.column("cat", width=400, anchor="w")
 
-        # (2) The engine's advice for the next allocation.
+        # (2) The engine's advice for the next allocation - reasoning text.
         try:
             _foes = [z for z in (self.state or {}).get("ships", [])
                      if (z.get("race") or "").upper() != (s.get("race") or "").upper()]
@@ -1322,9 +1429,8 @@ class Bridge(tk.Tk):
         turn = (self.state or {}).get("turn", 1)
         impulse = (self.state or {}).get("impulse", 1)
         alloc_turn = turn + 1 if impulse >= 32 else turn
-        eaf.append(f'ADVISED for turn {alloc_turn}:')
-        eaf += cur_eaf
-        self.eaf_txt.set_lines(eaf, self.ai)
+        self.eaf_txt.set_lines([f'ADVISED for turn {alloc_turn} ({role}):']
+                               + cur_eaf, self.ai)
 
         # --- SSD. Now flags DAMAGE prominently: a summary of what is destroyed
         # up top, a marker on every damaged line, and a POWER section (engine
@@ -1417,6 +1523,31 @@ class Bridge(tk.Tk):
             out += ["~ " + v for v in voiced] if voiced else ["(opening channel...)"]
             out.append("")
         self.comms_txt.set_lines(out, self.ai)
+
+    def _render_flagship(self):
+        """The glance view: turn clock + the ranked handful of decisions that
+        matter this impulse, one line each, drawn from the same order lines the
+        ship tabs show in full."""
+        st = self.state
+        if not st:
+            return
+        out = []
+        if self.lines and self.lines[0].startswith("==="):
+            out.append(self.lines[0])
+        out.append("")
+        try:
+            top = cmd.flagship_summary(self.lines)
+        except Exception:
+            top = []
+        if not top:
+            out.append("(no pressing decisions - closing/manoeuvre phase)")
+        else:
+            out.append("--- PRIORITY DECISIONS ---")
+            for side, ship, txt in top:
+                tag = "[ORDER]" if side.upper() == self.ai.upper() else "[advise]"
+                out.append(f"{tag} {ship}: {txt}")
+        out += ["", "(full rationale per ship on the Ships tab)"]
+        self.flag_txt.set_lines(out, self.ai)
 
     def _render_referee(self):
         """Phase-1 shadow referee: advance the shadow by dead reckoning from the

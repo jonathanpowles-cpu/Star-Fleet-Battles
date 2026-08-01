@@ -1725,6 +1725,28 @@ def order_for(ship, enemies, impulse, is_order, log=None, turn=1, state=None, fr
     if cthreats:
         lines.append(f"    SCREEN: {len(cthreats)} seeker(s) tracking {consort['label']} "
                      f"(nearest {cthreats[0]['range']} hex) - spend ADD/phasers on THESE, not your own.")
+    # ---- hunt a down shield he has ROTATED AWAY. Mizia only triggers when the
+    # facing shield is down; a smart opponent turns the hole away (live example:
+    # KHS FF 9's #2 at 0, turned to B so the Lyrans bear on his fresh #1). The
+    # counter is geometry, not fire: swing the bearing one sextant toward the
+    # hole and shoot when it opens - and say WHICH way to swing.
+    if not es_down and rng <= 15:
+        holes = [i for i, (v, m) in enumerate(zip(tgt.get("shields") or [],
+                                                  tgt.get("shields_max") or []))
+                 if m > 0 and v == 0]
+        if holes:
+            best = min(holes, key=lambda i: min((i - es) % 6, (es - i) % 6))
+            cw = (best - es) % 6
+            ccw = (es - best) % 6
+            side = ("CLOCKWISE" if cw <= ccw else "COUNTER-CLOCKWISE")
+            steps = min(cw, ccw)
+            ship["hunt"] = (tgt["label"], best)      # board draws this order
+            lines.append(f'    HUNT: his {SHIELD[best]} is DOWN but rotated away - '
+                         f'you bear on his {SHIELD[es]} ({es_val}/{es_max}). Swing '
+                         f'the bearing {steps} sextant(s) {side} (keep crossing his '
+                         f'{"bow" if best in (0,1,5) else "stern"} side) and fire '
+                         f'the moment the hole faces you; every impulse he spends '
+                         f'counter-rotating is an impulse he is not closing.')
     # fire / weapons
     if es_down and rng <= 15:
         lines.append(f'    FIRE: his {SHIELD[es]} is DOWN - concentrate {fam} + phasers (Mizia).')
@@ -2308,6 +2330,65 @@ def build_commands(state, ai_side, advise_side):
     lines.extend(_flight_lines(state, advise_side, adv_enemies, turn, imp, log=log))
     lines.extend(doctrine_lines(adv, ai, state, imp, is_order=False))
     return lines
+
+
+# Flagship priority: what actually decides battles, highest first. Scored by
+# marker so the summary is derived from the SAME lines the ship tabs show -
+# one source of truth, two densities.
+_FLAG_SCORES = (
+    (100, ("FIRE THIS TURN", "CANNOT hold", "use-or-lose", "USE OR LOSE")),
+    (90,  ("OUTCOME:", "leak", "INTERNALS")),
+    (80,  ("HUNT:", "is DOWN - concentrate")),
+    (70,  ("RELEASE ESG", "ESG NOW", "ANNOUNCE")),
+    (60,  ("SCREEN:", "seeker(s) tracking", "WEASEL: charge")),
+    (50,  ("FIRE:",)),
+    (40,  ("LAUNCH", "SCATTER-PACK", "suicide shuttle - ", "ARM SUICIDE")),
+    (30,  (">>> IMPULSE",)),
+)
+
+
+def flagship_summary(lines, limit=7):
+    """The handful of decisions that matter RIGHT NOW, ranked, one line each.
+
+    Derived from build_commands' own output: every candidate is an existing
+    order/advice line, attributed to its ship and side, scored by marker. The
+    ship tabs stay the drill-down; this is the glance.
+    """
+    side = ship = None
+    scored = []
+    for ln in lines:
+        s = ln.strip()
+        m = re.match(r"^--- (\w+) (ORDERS|ADVICE)", s)
+        if m:
+            side, ship = m.group(1), None
+            continue
+        m = re.match(r"^(\S.*?) vs .* @ rng (\d+)", ln)
+        if m:
+            ship = m.group(1)
+            continue
+        if not ln.startswith(" ") or ship is None:
+            continue
+        for score, keys in _FLAG_SCORES:
+            if any(k in s for k in keys):
+                txt = s
+                if txt.startswith(">>> "):
+                    txt = txt[4:]
+                # strong lines only - drop the rationale bullet-cloud
+                if len(txt) > 110:
+                    txt = txt[:107] + "..."
+                scored.append((score, side, ship, txt))
+                break
+    scored.sort(key=lambda x: -x[0])
+    out, seen = [], set()
+    for score, sd, sh, txt in scored:
+        if len(out) >= limit:
+            break
+        key = (sh, txt[:40])
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((sd, sh, txt))
+    return out
 
 
 def main():
