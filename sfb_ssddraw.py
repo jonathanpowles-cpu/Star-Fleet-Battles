@@ -22,8 +22,10 @@ _COLOURS = {
     # weapons
     29: "#ffa657", 28: "#ffa657", 15: "#ffa657",     # disruptor / photon / phaser
     33: "#ffa657", 34: "#ffa657", 35: "#ffa657", 36: "#ffa657", 37: "#ffa657",
-    14: "#ff7b72", 39: "#ff7b72", 62: "#ff7b72", 63: "#ff7b72",  # drone racks
-    38: "#ff7b72",                                   # ADD
+    # drone racks / ADD: PURPLE - the old light-red was one shade off the
+    # destroyed fill, so a healthy rack read as damage at a glance.
+    14: "#c9a0ff", 39: "#c9a0ff", 62: "#c9a0ff", 63: "#c9a0ff",
+    38: "#c9a0ff",
     # hull / structure
     5: "#8b949e", 11: "#8b949e", 13: "#6e7681",      # hull / excess
     # shields

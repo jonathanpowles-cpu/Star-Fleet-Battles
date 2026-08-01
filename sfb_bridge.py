@@ -18,7 +18,7 @@ combat log; this window never writes to the game and is never the referee.
     python sfb_bridge.py --ai Kzinti --advise Lyran [--no-voice]
 """
 from __future__ import annotations
-import os, sys, math, glob, time, argparse, traceback, importlib
+import os, re, sys, math, glob, time, argparse, traceback, importlib
 import tkinter as tk
 from tkinter import ttk, scrolledtext, font as tkfont
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -716,6 +716,9 @@ class BoardView(tk.Frame):
 class TextPane(scrolledtext.ScrolledText):
     """Shared colour-coded text widget."""
 
+    # ONE type scale for every pane: Consolas throughout, three sizes only -
+    # 12 bold for screen/ship heads, 11 bold for the impulse band, 10 for
+    # orders, 9 for dim rationale. Anything else reads as a different app.
     TAGS = {
         "head":    dict(foreground=ACCENT, font=("Consolas", 12, "bold"), spacing1=8, spacing3=4),
         "sideA":   dict(foreground=SIDE_A, font=("Consolas", 10, "bold"), spacing1=6),
@@ -736,15 +739,15 @@ class TextPane(scrolledtext.ScrolledText):
         # The one line you actually execute this impulse - deliberately the
         # loudest thing on the screen, since everything else is context for it.
         "impulse": dict(foreground="#ffffff", background="#1f6f43",
-                        font=("Consolas", 13, "bold"), spacing1=2, spacing3=6,
+                        font=("Consolas", 11, "bold"), spacing1=2, spacing3=6,
                         lmargin1=6, lmargin2=6),
         "impulse_hold": dict(foreground="#c9d1d9", background="#2a2f36",
-                             font=("Consolas", 12, "bold"), spacing1=2, spacing3=4,
+                             font=("Consolas", 11, "bold"), spacing1=2, spacing3=4,
                              lmargin1=6, lmargin2=6),
         # Ship name: same weight as the order it introduces, and sitting
         # directly on top of it so the pair reads as one block.
         "shipname": dict(foreground="#ffffff", background="#243447",
-                         font=("Consolas", 13, "bold"), spacing1=12, spacing3=0,
+                         font=("Consolas", 12, "bold"), spacing1=12, spacing3=0,
                          lmargin1=6, lmargin2=6),
         "impulse_why": dict(foreground=MUTED, font=("Consolas", 9, "italic"),
                             lmargin1=24, lmargin2=24),
@@ -918,15 +921,14 @@ class Bridge(tk.Tk):
         # --- BOARD
         self.board = BoardView(self.nb, self)
         # --- FLAGSHIP: the glance view, ONE TAB PER SIDE - orders and advice
-        # never share a screen.
-        ffa = tk.Frame(self.nb, bg=BG)
-        self.flag_txt_ai = TextPane(ffa)
-        self.flag_txt_ai.pack(fill="both", expand=True)
-        self.nb.add(ffa, text=f"Flag: {ai}")
-        ffb = tk.Frame(self.nb, bg=BG)
-        self.flag_txt_adv = TextPane(ffb)
-        self.flag_txt_adv.pack(fill="both", expand=True)
-        self.nb.add(ffb, text=f"Flag: {advise}")
+        # never share a screen. Same quadrant layout as Tactical, but the
+        # headlines cover the WHOLE fleet (ship-prefixed, no rationale).
+        self.flag_panes = {}
+        for side in (ai, advise):
+            ff = tk.Frame(self.nb, bg=BG)
+            head, panes = self._make_quadrants(ff, head_height=2)
+            self.flag_panes[side] = (head, panes)
+            self.nb.add(ff, text=f"Flag: {side}")
 
         self.nb.add(self.board, text="Board")
 
@@ -962,28 +964,9 @@ class Bridge(tk.Tk):
         self.ship_list.bind("<<ListboxSelect>>", self._on_pick)
         self.ship_nb = ttk.Notebook(sf)
         self.ship_nb.pack(side="left", fill="both", expand=True)
-        # Tactical: a short status header + a QUADRANT grid, one section per
-        # kind of advice (movement / weapons / defence / command & energy).
-        # Four short panes instead of one scroll of death; each cell scrolls
-        # independently if its content ever runs long.
+        # Tactical: a short status header + the shared QUADRANT grid.
         tf = tk.Frame(self.ship_nb, bg=BG)
-        self.adv_head = TextPane(tf, height=4)
-        self.adv_head.pack(side="top", fill="x")
-        qgrid = tk.Frame(tf, bg=BG)
-        qgrid.pack(fill="both", expand=True)
-        self.adv_panes = {}
-        for i, name in enumerate(("MOVEMENT", "WEAPONS",
-                                  "DEFENCE", "COMMAND & ENERGY")):
-            cell = tk.Frame(qgrid, bg=BG, highlightbackground=GRID,
-                            highlightthickness=1)
-            cell.grid(row=i // 2, column=i % 2, sticky="nsew", padx=2, pady=2)
-            tk.Label(cell, text=" " + name, bg=PANEL, fg=ACCENT, anchor="w",
-                     font=("Consolas", 9, "bold")).pack(fill="x")
-            p = TextPane(cell)
-            p.pack(fill="both", expand=True)
-            self.adv_panes[name] = p
-        qgrid.rowconfigure((0, 1), weight=1)
-        qgrid.columnconfigure((0, 1), weight=1)
+        self.adv_head, self.adv_panes = self._make_quadrants(tf, head_height=4)
         self.ship_nb.add(tf, text="Tactical")
         self.tab_adv = tf
         # EAF as a real TABLE: rows = allocation categories, columns = turns,
@@ -1004,13 +987,13 @@ class Bridge(tk.Tk):
         self.ship_nb.add(ef, text="EAF")
         self.tab_eaf = ef
         # SSD: drawn from the CLIENT'S OWN layout data (ship['ssd_boxes']) -
-        # the authentic record sheet with exact box-level damage, every hull,
-        # no scans. The text SSD stays below as the detailed readout.
+        # the record sheet takes the LEFT (the bigger share, full height), the
+        # text readout sits on the right as a fixed reference column.
         sf2 = tk.Frame(self.ship_nb, bg=BG)
-        self.ssd_canvas = tk.Canvas(sf2, bg=BG, highlightthickness=0, height=380)
-        self.ssd_canvas.pack(side="top", fill="x")
-        self.ssd_txt = TextPane(sf2)
-        self.ssd_txt.pack(side="bottom", fill="both", expand=True)
+        self.ssd_canvas = tk.Canvas(sf2, bg=BG, highlightthickness=0)
+        self.ssd_canvas.pack(side="left", fill="both", expand=True)
+        self.ssd_txt = TextPane(sf2, width=44)
+        self.ssd_txt.pack(side="right", fill="y")
         self.ship_nb.add(sf2, text="SSD")
         self.tab_ssd = sf2
         self.tab_crew, self.crew_txt = self._sub_tab("Bridge crew")
@@ -1559,14 +1542,15 @@ class Bridge(tk.Tk):
         # exact per-box damage. Every hull has one - it travels in the save.
         try:
             import sfb_ssddraw as SDRAW
-            cw = max(self.ssd_canvas.winfo_width(), 500)
+            cw = max(self.ssd_canvas.winfo_width(), 620)
+            ch = max(self.ssd_canvas.winfo_height(), 520)
             dead = SDRAW.draw(self.ssd_canvas, s.get("ssd_boxes") or [],
-                              cw, 380,
+                              cw, ch,
                               title=f"{s['label']}  "
                                     f"({s.get('type','?')}, {s['race']})")
             if dead:
                 self.ssd_canvas.create_text(
-                    cw - 8, 372, anchor="se", fill="#f85149",
+                    cw - 8, ch - 8, anchor="se", fill="#f85149",
                     text=f"{dead} box(es) destroyed",
                     font=("Consolas", 9, "bold"))
         except Exception:
@@ -1670,33 +1654,89 @@ class Bridge(tk.Tk):
             win.deiconify()
             win.lift()
 
+    QUADRANTS = ("MOVEMENT", "WEAPONS", "DEFENCE", "COMMAND & ENERGY")
+
+    def _make_quadrants(self, parent, head_height=4):
+        """The shared advice layout: a short header pane over a 2x2 grid of
+        titled section panes. One builder so Tactical and both Flag tabs are
+        pixel-identical - same fonts, same headers, same cell chrome."""
+        head = TextPane(parent, height=head_height)
+        head.pack(side="top", fill="x")
+        qgrid = tk.Frame(parent, bg=BG)
+        qgrid.pack(fill="both", expand=True)
+        panes = {}
+        for i, name in enumerate(self.QUADRANTS):
+            cell = tk.Frame(qgrid, bg=BG, highlightbackground=GRID,
+                            highlightthickness=1)
+            cell.grid(row=i // 2, column=i % 2, sticky="nsew", padx=2, pady=2)
+            tk.Label(cell, text=" " + name, bg=PANEL, fg=ACCENT, anchor="w",
+                     font=("Consolas", 9, "bold")).pack(fill="x")
+            p = TextPane(cell)
+            p.pack(fill="both", expand=True)
+            panes[name] = p
+        qgrid.rowconfigure((0, 1), weight=1)
+        qgrid.columnconfigure((0, 1), weight=1)
+        return head, panes
+
+    def _side_headlines(self, side):
+        """Fleet-wide HEADLINES for one side: every order line (no rationale),
+        prefixed with its ship, in fleet order - the Flag tab's raw material."""
+        out = []
+        in_side = False
+        ship = None
+        for ln in self.lines:
+            s = ln.strip()
+            m = re.match(r"^--- (\w+) (ORDERS|ADVICE)", s)
+            if m:
+                in_side = m.group(1).upper() == side.upper()
+                ship = None
+                continue
+            if not in_side:
+                continue
+            m = re.match(r"^(\S.*?) vs .* @ rng (\d+)", ln)
+            if m:
+                ship = m.group(1)
+                continue
+            if ship is None or not ln.startswith("    ") \
+                    or ln.startswith("          "):
+                continue                    # rationale / refs stay on Tactical
+            body = s[4:].strip() if s.startswith(">>> ") else s
+            # station-voice the BODY first (crewify matches on the line start,
+            # so the ship prefix must come after), and drop the refs line it
+            # may synthesise - citations live on the Tactical tab.
+            try:
+                import sfb_condense as CD
+                cw = [l for l in CD.crewify(["    " + body])
+                      if not l.startswith("          ")]
+                body = cw[0].strip() if cw else body
+            except Exception:
+                pass
+            out.append(f"    {ship}: {body}")
+        return out
+
     def _render_flagship(self):
-        """The glance view, one tab per side: turn clock + the ranked handful
-        of decisions that matter this impulse, drawn from the same order lines
-        the ship tabs show in full."""
+        """One Flag tab per side, quadrant layout: fleet-wide headlines only
+        (ship-prefixed, rationale stays on the ship's Tactical tab), sorted
+        into the same MOVEMENT / WEAPONS / DEFENCE / COMMAND sections."""
         st = self.state
         if not st:
             return
-        try:
-            top = cmd.flagship_summary(self.lines, limit=12)
-        except Exception:
-            top = []
         clock = self.lines[0] if (self.lines
                                   and self.lines[0].startswith("===")) else ""
-        for side_name, pane, role in ((self.ai, self.flag_txt_ai, "[ORDER]"),
-                                      (self.advise, self.flag_txt_adv, "[advise]")):
-            mine = [(sh, txt) for sd, sh, txt in top
-                    if sd and sd.upper() == side_name.upper()][:7]
-            out = [clock, ""] if clock else []
-            if not mine:
-                out.append(f"(no pressing {side_name} decisions - "
-                           f"closing/manoeuvre phase)")
-            else:
-                out.append(f"--- {side_name} PRIORITY DECISIONS ---")
-                for sh, txt in mine:
-                    out.append(f"{role} {sh}: {txt}")
-            out += ["", "(full rationale per ship on the Ships tab)"]
-            pane.set_lines(out, self.ai)
+        for side_name, (head, panes) in self.flag_panes.items():
+            role = "ORDERS" if side_name.upper() == self.ai.upper() else "ADVICE"
+            head.set_lines([clock or "=== waiting ===",
+                            f"--- {side_name} FLEET {role} ---"], self.ai)
+            headlines = self._side_headlines(side_name)
+            try:
+                import sfb_condense as CD
+                buckets = CD.bucket_orders(headlines)
+            except Exception:
+                buckets = {"COMMAND & ENERGY": headlines}
+            for name, pane in panes.items():
+                content = [ln for ln in (buckets.get(name) or [])
+                           if not ln.startswith("          ")]
+                pane.set_lines(content or ["(nothing this impulse)"], self.ai)
 
     def _render_referee(self):
         """Phase-1 shadow referee: advance the shadow by dead reckoning from the
