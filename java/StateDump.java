@@ -240,7 +240,56 @@ public class StateDump {
       boolean sf = true;
       for (Map.Entry<String,int[]> e : sys.entrySet()) { if (!sf) sb.append(", "); sf = false;
         sb.append("\"").append(e.getKey()).append("\": [").append(e.getValue()[0]).append(",").append(e.getValue()[1]).append("]"); }
-      sb.append("}}");
+      sb.append("}");
+      // The client's OWN SSD layout: every box group with its position, size,
+      // kind, and per-box damage state. This is the vector record sheet - the
+      // bridge draws the authentic SSD from it, with exact box-level damage,
+      // for every hull, no scans needed.
+      sb.append(", \"ssd_boxes\": [");
+      Object ssdObj = a.get("SSD");
+      Object boxesArr = fld(ssdObj, "boxes");
+      if (boxesArr != null) {
+        boolean bf = true;
+        for (int bi = 0; bi < java.lang.reflect.Array.getLength(boxesArr); bi++) {
+          Object bx = java.lang.reflect.Array.get(boxesArr, bi);
+          if (bx == null) continue;
+          if (!bf) sb.append(", ");
+          bf = false;
+          Object st = fld(bx, "boxStatus");
+          StringBuilder stj = new StringBuilder("[");
+          if (st != null) {
+            int n = java.lang.reflect.Array.getLength(st);
+            for (int si = 0; si < n; si++) {
+              if (si > 0) stj.append(",");
+              stj.append(java.lang.reflect.Array.getInt(st, si));
+            }
+          }
+          stj.append("]");
+          // designation may be a single string or a Collection of them
+          String des = S(fld(bx, "designation"));
+          Object desL = fld(bx, "designations");
+          if (des.isEmpty() && desL instanceof Collection) {
+            StringBuilder dj = new StringBuilder();
+            for (Object d : (Collection<?>) desL) {
+              if (dj.length() > 0) dj.append(" ");
+              dj.append(S(d));
+            }
+            des = dj.toString();
+          }
+          sb.append("{\"x\": ").append(I(fld(bx, "x")))
+            .append(", \"y\": ").append(I(fld(bx, "y")))
+            .append(", \"w\": ").append(I(fld(bx, "width")))
+            .append(", \"h\": ").append(I(fld(bx, "height")))
+            .append(", \"kind\": ").append(I(fld(bx, "kind")))
+            .append(", \"n\": ").append(I(fld(bx, "numOfBoxes")))
+            .append(", \"max\": ").append(I(fld(bx, "maxNumOfBoxes")))
+            .append(", \"arc\": ").append(I(fld(bx, "firingArc")))
+            .append(", \"section\": ").append(I(fld(bx, "section")))
+            .append(", \"des\": \"").append(jesc(des))
+            .append("\", \"status\": ").append(stj).append("}");
+        }
+      }
+      sb.append("]}");
     }
     sb.append("\n  ],\n  \"shuttles\": [\n");
     // Airborne shuttles and fighters are real on-board pieces, so what is actually

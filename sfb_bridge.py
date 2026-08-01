@@ -975,17 +975,16 @@ class Bridge(tk.Tk):
         self.eaf_txt.pack(fill="x", padx=0, pady=(4, 0))
         self.ship_nb.add(ef, text="EAF")
         self.tab_eaf = ef
-        # SSD: the scanned sheet when we have one for the hull, live damage
-        # banner above it, and the text SSD (always present) below.
+        # SSD: drawn from the CLIENT'S OWN layout data (ship['ssd_boxes']) -
+        # the authentic record sheet with exact box-level damage, every hull,
+        # no scans. The text SSD stays below as the detailed readout.
         sf2 = tk.Frame(self.ship_nb, bg=BG)
-        self.ssd_banner = tk.Label(sf2, bg=BG, fg=ORANGE, justify="left",
-                                   anchor="w", font=("Consolas", 10, "bold"))
-        self.ssd_img_label = tk.Label(sf2, bg=BG)
+        self.ssd_canvas = tk.Canvas(sf2, bg=BG, highlightthickness=0, height=380)
+        self.ssd_canvas.pack(side="top", fill="x")
         self.ssd_txt = TextPane(sf2)
         self.ssd_txt.pack(side="bottom", fill="both", expand=True)
         self.ship_nb.add(sf2, text="SSD")
         self.tab_ssd = sf2
-        self._ssd_photo = None          # keep a reference or Tk drops the image
         self.tab_crew, self.crew_txt = self._sub_tab("Bridge crew")
         self.nb.add(sf, text="Ships")
 
@@ -1524,38 +1523,22 @@ class Bridge(tk.Tk):
             ssd.append(_line(sysname, cur, mx))
         self.ssd_txt.set_lines(ssd, self.ai)
 
-        # Scanned SSD sheet, when the hull has one. Damage rides above it as a
-        # banner (box-level overlay needs per-scan coordinates - see
-        # sfb_ssdimg); the text SSD below stays authoritative.
+        # The graphical SSD, drawn from the client's own layout (ssd_boxes) with
+        # exact per-box damage. Every hull has one - it travels in the save.
         try:
-            import sfb_ssdimg as SIMG
-            path = SIMG.ssd_image_path(s)
+            import sfb_ssddraw as SDRAW
+            cw = max(self.ssd_canvas.winfo_width(), 500)
+            dead = SDRAW.draw(self.ssd_canvas, s.get("ssd_boxes") or [],
+                              cw, 380,
+                              title=f"{s['label']}  "
+                                    f"({s.get('type','?')}, {s['race']})")
+            if dead:
+                self.ssd_canvas.create_text(
+                    cw - 8, 372, anchor="se", fill="#f85149",
+                    text=f"{dead} box(es) destroyed",
+                    font=("Consolas", 9, "bold"))
         except Exception:
-            path = None
-        if path and path != getattr(self, "_ssd_img_path", None):
-            try:
-                from PIL import Image, ImageTk
-                im = Image.open(path)
-                im.thumbnail((760, 520))
-                self._ssd_photo = ImageTk.PhotoImage(im)
-                self._ssd_img_path = path
-            except Exception:
-                path = None
-        if path:
-            banner = []
-            try:
-                banner = SIMG.damage_banner(s)
-            except Exception:
-                pass
-            self.ssd_banner.configure(text="\n".join(banner) if banner
-                                      else "no damage recorded")
-            self.ssd_banner.pack(side="top", fill="x", padx=10, pady=(6, 0))
-            self.ssd_img_label.configure(image=self._ssd_photo)
-            self.ssd_img_label.pack(side="top", pady=4)
-        else:
-            self._ssd_img_path = None
-            self.ssd_banner.pack_forget()
-            self.ssd_img_label.pack_forget()
+            pass
 
         # --- Bridge crew (LLM, per ship)
         st = self.state
@@ -1883,7 +1866,7 @@ def choose_save_dialog():
              font=("Segoe UI", 12, "bold")).pack(padx=14, pady=(14, 2), anchor="w")
     tk.Label(root, text="It stays on this one until you restart - it will not "
                         "switch by itself.",
-             bg=BG, fg=DIM, font=("Segoe UI", 9)).pack(padx=14, pady=(0, 10), anchor="w")
+             bg=BG, fg=MUTED, font=("Segoe UI", 9)).pack(padx=14, pady=(0, 10), anchor="w")
 
     box = tk.Frame(root, bg=BG)
     box.pack(padx=14, pady=(0, 6), fill="both", expand=True)
@@ -1896,7 +1879,7 @@ def choose_save_dialog():
                        selectcolor=BG, activebackground=BG, activeforeground=FG,
                        anchor="w", justify="left", font=("Consolas", 10)).pack(
             fill="x", anchor="w")
-        tk.Label(box, text=f"        {os.path.basename(p)}", bg=BG, fg=DIM,
+        tk.Label(box, text=f"        {os.path.basename(p)}", bg=BG, fg=MUTED,
                  font=("Consolas", 8)).pack(fill="x", anchor="w", pady=(0, 4))
 
     def ok():
