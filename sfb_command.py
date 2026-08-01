@@ -2341,10 +2341,33 @@ _FLAG_SCORES = (
     (80,  ("HUNT:", "is DOWN - concentrate")),
     (70,  ("RELEASE ESG", "ESG NOW", "ANNOUNCE")),
     (60,  ("SCREEN:", "seeker(s) tracking", "WEASEL: charge")),
-    (50,  ("FIRE:",)),
+    (50,  ("FIRE:", "GUNNERY:")),      # both names: crewify renames FIRE: at render
     (40,  ("LAUNCH", "SCATTER-PACK", "suicide shuttle - ", "ARM SUICIDE")),
-    (30,  (">>> IMPULSE",)),
+    (30,  (">>> IMPULSE", "IMPULSE ")),   # with and without the >>> band prefix
 )
+
+
+def flag_score(text):
+    """Urgency score of one order line (the _FLAG_SCORES markers), 0 if none.
+
+    Maneuvers that CHANGE something (a turn, slip, HET) rate above the routine
+    straight-ahead band: the flag deck cares that a ship is coming about, not
+    that it is still going forward.
+    """
+    for score, keys in _FLAG_SCORES:
+        if any(k in text for k in keys):
+            if score == 50 and "hold until" in text.lower():
+                return 20           # a passive hold is not flag-deck traffic
+            if score == 30 and not any(m in text for m in
+                                       ("TURN LEFT", "TURN RIGHT", "SIDESLIP",
+                                        "HET", "EMERGENCY")):
+                return 30           # routine forward movement
+            if score == 30:
+                return 45           # an actual maneuver
+            return score
+    if any(m in text for m in ("TURN LEFT", "TURN RIGHT", "SIDESLIP", "HET")):
+        return 45
+    return 0
 
 
 def flagship_summary(lines, limit=7):

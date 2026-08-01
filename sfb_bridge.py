@@ -1733,10 +1733,26 @@ class Bridge(tk.Tk):
                 buckets = CD.bucket_orders(headlines)
             except Exception:
                 buckets = {"COMMAND & ENERGY": headlines}
+            # The flag deck gets AT MOST one line per ship per quadrant - the
+            # highest-urgency one - and only if it is actually vital (routine
+            # straight-ahead movement and passive holds are omitted entirely).
+            VITAL = 40
             for name, pane in panes.items():
-                content = [ln for ln in (buckets.get(name) or [])
-                           if not ln.startswith("          ")]
-                pane.set_lines(content or ["(nothing this impulse)"], self.ai)
+                best = {}                   # ship -> (score, line)
+                for ln in (buckets.get(name) or []):
+                    if ln.startswith("          "):
+                        continue
+                    s = ln.strip()
+                    ship2, _, rest = s.partition(": ")
+                    try:
+                        sc = cmd.flag_score(rest or s)
+                    except Exception:
+                        sc = 0
+                    if sc >= VITAL and sc > best.get(ship2, (0, ""))[0]:
+                        best[ship2] = (sc, ln)
+                content = [ln for _, ln in
+                           sorted(best.values(), key=lambda x: -x[0])]
+                pane.set_lines(content or ["(nothing vital)"], self.ai)
 
     def _render_referee(self):
         """Phase-1 shadow referee: advance the shadow by dead reckoning from the
