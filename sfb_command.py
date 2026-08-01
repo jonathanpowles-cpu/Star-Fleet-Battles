@@ -339,6 +339,45 @@ def phaser_capacitor_text(ship):
     return f"{exact:g}" if exact == rounded else f"{exact:g} (={rounded} rounded, H6.21)"
 
 
+def energy_commands(ship, threatened=False, seekers=None):
+    """The energy DECISIONS of the moment, as 0-2 command lines.
+
+    Not an allocation recap (the EAF tab holds that) - these are the things a
+    captain actually orders between allocations:
+      * discharge batteries into the ESG when drones are inbound and a
+        generator is below the G23.22 cap (H7.132 reserve power);
+      * refill what the phaser capacitor fired (H6.1), next allocation.
+    """
+    out = []
+    w = ship.get("weapons") or {}
+    p = ship.get("power") or {}
+    batt = int(p.get("battery") or 0)
+    try:
+        import sfb_actions as ACT
+        batt_free = max(0, batt - int(round(ACT.battery_discharge_from_eaf(ship))))
+    except Exception:
+        batt_free = batt
+    n_esg = w.get("esg", [0, 0])[0]
+    inbound = bool(seekers) or threatened
+    if n_esg and batt_free and inbound:
+        try:
+            import sfb_actions as ACT
+            charges, _ = ACT.esg_charges(ship, 0)
+        except Exception:
+            charges = []
+        room = sum(max(0.0, 5 - c) for c in (charges or [0] * n_esg))
+        if room >= 1:
+            spend = min(batt_free, int(room))
+            out.append(f"ENERGY: discharge {spend} battery into the ESG "
+                       f"(reserve power, H7.132) - generators at "
+                       f"{'/'.join(f'{c:g}' for c in charges) if charges else '?'} "
+                       f"of the 5-point cap (G23.22), drones inbound")
+    cur, _used, note = phaser_capacitor_state(ship)
+    if cur is not None and "REFILL" in note:
+        out.append(f"ENERGY: {note} - book it in the next allocation (H6.1)")
+    return out
+
+
 def phaser_capacitor_state(ship):
     """(current_charge, used_last_turn, note) from the client EAF, or (None, ..).
 
@@ -1659,19 +1698,13 @@ def order_for(ship, enemies, impulse, is_order, log=None, turn=1, state=None, fr
     verdict, tdetail = commitment(ship, tgt, rng)
     lines.append(f'    POSTURE: {posture} - {why}')
     lines.append(f'    TRADE: {verdict} - {tdetail}')
-    # EAF (energy allocation)
-    # The capacitor is full at scenario start and stays full until you fire
-    # (H6.1), so only a ship that HAS fired phasers this turn may allocate.
-    _pf = False
-    try:
-        _hist = ((log or {}).get("fired") or {}).get(ship["label"], {})
-        _pf = any("phaser" in k and any(t == turn for t, _i in v)
-                  for k, v in _hist.items())
-    except Exception:
-        pass
-    lines.append("    " + compute_eaf(ship, want_speed, closing and rng <= 10,
-                                      threatened, fired_phasers=_pf,
-                                      enemies=enemies, rng=rng))
+    # ENERGY: actionable commands only. The full allocation recap lives on the
+    # EAF tab (compute_eaf) - repeating it here buried the tactical screen and,
+    # worse, its weapon words dragged it into the WEAPONS quadrant. What the
+    # tactical stream wants is the energy DECISIONS of the moment: discharge
+    # batteries into the ESG, refill what the capacitor fired.
+    for _en in energy_commands(ship, threatened=threatened, seekers=seekers):
+        lines.append("    " + _en)
     if ms_val == 0:
         mv += f' WARN our {SHIELD[ms]} is DOWN toward him - turn to a fresh shield.'
     if mission == 'ESCORT' and consort:

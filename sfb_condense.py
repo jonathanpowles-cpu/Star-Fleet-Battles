@@ -119,6 +119,7 @@ def condense(lines, max_reasons=NORMAL):
 # way a captain would give them; the category survives in parentheses only
 # where it disambiguates. Order matters: first match wins.
 _STATIONS = (
+    ("ENERGY:", "ENGINEERING:"),
     ("MOVE:", "HELM:"),
     ("MANEUVER", "HELM (maneuver):"),
     ("FIRE:", "GUNNERY:"),
@@ -211,12 +212,20 @@ def bucket_orders(lines):
         deep = ln.startswith("          ")          # rationale/refs
         if not deep and s:
             probe = s[4:] if s.startswith(">>> ") else s
-            placed = None
-            for name, keys in _BUCKETS:
-                if any(k in probe for k in keys):
-                    placed = name
-                    break
-            current = placed or "COMMAND & ENERGY"
+            # ENERGY lines are routed FIRST: an energy command or allocation
+            # necessarily names weapons ('refill phaser capacitor', 'ESG'), and
+            # letting the WEAPONS markers see it first is exactly how the CLE's
+            # energy allocation ended up filed under WEAPONS.
+            if probe.startswith(("ENERGY", "ENGINEERING", "EAF")) \
+                    or "Reserve Power" in probe or "battery" in probe.lower():
+                current = "COMMAND & ENERGY"
+            else:
+                placed = None
+                for name, keys in _BUCKETS:
+                    if any(k in probe for k in keys):
+                        placed = name
+                        break
+                current = placed or "COMMAND & ENERGY"
         out[current].append(ln)
     return out
 

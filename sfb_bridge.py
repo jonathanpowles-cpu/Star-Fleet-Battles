@@ -833,7 +833,7 @@ class TextPane(scrolledtext.ScrolledText):
             self._warnsplit(ln, "move")
         elif s.startswith("DEFENCE"):
             self._warnsplit(ln, "seek")
-        elif s.startswith("SCIENCE"):
+        elif s.startswith("SCIENCE") or s.startswith("ENGINEERING"):
             self.insert("end", ln + "\n", "eaf")
         elif s.startswith("SHUTTLE BAY"):
             self.insert("end", ln + "\n", "cyc")
